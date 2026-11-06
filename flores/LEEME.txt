@@ -1,0 +1,7 @@
+Aquí viven las flores que llevan fotos o cartas largas.
+
+1. En el panel secreto, pulsa "Descargar la flor".
+2. Guarda el archivo .json en esta carpeta, sin cambiarle el nombre.
+3. Publica el jardín de nuevo.
+
+Sin el archivo publicado, el QR de esa flor no la encontrará.

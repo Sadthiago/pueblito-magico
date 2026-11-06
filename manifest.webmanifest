@@ -1,0 +1,16 @@
+{
+  "name": "Nuestro Jardín",
+  "short_name": "Jardín",
+  "description": "Un jardín donde cada flor que te regale vive para siempre.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf7ef",
+  "theme_color": "#6db5f5",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

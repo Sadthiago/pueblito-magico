@@ -1,0 +1,1409 @@
+/* =========================================================================
+   NUESTRO JARDÍN
+   Pensado primero para el celular. Arriba, cielo limpio, pueblito y casita
+   con sus detalles. Abajo, un campo sin tope para las flores. Todo plano.
+   ========================================================================= */
+
+/* Registradas para que los colores se fundan al cambiar la hora */
+@property --sky-top { syntax: '<color>'; inherits: true; initial-value: #6db5f5; }
+@property --sky-mid { syntax: '<color>'; inherits: true; initial-value: #a9d6f7; }
+@property --sky-bottom { syntax: '<color>'; inherits: true; initial-value: #fdf0c8; }
+@property --ground-top { syntax: '<color>'; inherits: true; initial-value: #7cc36b; }
+@property --ground { syntax: '<color>'; inherits: true; initial-value: #3f9150; }
+@property --hill-far { syntax: '<color>'; inherits: true; initial-value: #a6cfa8; }
+@property --hill-near { syntax: '<color>'; inherits: true; initial-value: #8cc28a; }
+@property --stone { syntax: '<color>'; inherits: true; initial-value: #d9c19a; }
+@property --stem { syntax: '<color>'; inherits: true; initial-value: #1f4a2c; }
+@property --dock { syntax: '<color>'; inherits: true; initial-value: #faf7ef; }
+@property --orbit-angle { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+
+:root {
+  --ink: #1f2a20;
+  --ink-soft: #55604f;
+  --paper: #faf7ef;
+  --paper-deep: #efeadb;
+  --line: #dcd6c4;
+  --accent: #b4552d;
+  --water: #2f6f8f;
+  --error: #9b2a1f;
+
+  --font: 'Newsreader', Georgia, serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-settle: cubic-bezier(0.3, 1.25, 0.5, 1);
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --dock-space: calc(60px + var(--safe-bottom));
+
+  /* Unidad de la casita: todo en la lámina crece con ella */
+  --u: min(1.95vw, 1.02dvh);
+  --cottage-w: calc(48 * var(--u));
+  --cottage-h: calc(46.7 * var(--u));
+  --sky-pad: calc(clamp(44px, 7dvh, 90px) + var(--safe-top));
+  --fw: clamp(104px, 31vw, 150px);
+  --row: calc(var(--fw) * 0.9);
+}
+
+/* ================= CICLO DÍA / TARDE / NOCHE ================= */
+body {
+  --sky-ink: #1f2a44;
+  --sky-ink-soft: #2c3a5a;
+  --on-ground: #fffbef;
+  --sun-opacity: 1;
+  --moon-opacity: 0;
+  --window-on: 0;
+  --lights-on: 0.55;
+  --lights-glow: 0;
+  --cottage-filter: none;
+  --cloud: rgba(255, 255, 255, 0.86);
+  --pool: 0;
+  --dock-ink: #1f2a20;
+  --dock-ink-soft: #55604f;
+  transition: --sky-top 1.5s ease, --sky-mid 1.5s ease, --sky-bottom 1.5s ease,
+              --ground-top 1.5s ease, --ground 1.5s ease, --hill-far 1.5s ease,
+              --hill-near 1.5s ease, --stone 1.5s ease,
+              --stem 1.5s ease, --dock 1.5s ease;
+}
+
+body.time-day {
+  --sky-top: #6db5f5; --sky-mid: #a9d6f7; --sky-bottom: #fdf0c8;
+  --ground-top: #7cc36b; --ground: #3f9150; --stem: #1c5a30; --dock: #faf7ef;
+  --hill-far: #a6cfa8; --hill-near: #8cc28a; --stone: #d9c19a;
+}
+
+body.time-sunset {
+  --sky-top: #4c2a85; --sky-mid: #d9607e; --sky-bottom: #fbae5c;
+  --ground-top: #6c9a4a; --ground: #2f6a3c; --stem: #173a22; --dock: #faf7ef; --trail-show: 0.9; --grass-show: 0.85;
+  --hill-far: #a65f72; --hill-near: #7d6a53; --stone: #c79a6b;
+  --sky-ink: #fff7e0; --sky-ink-soft: #ffe9c4;
+  --sun-opacity: 1; --moon-opacity: 0.25;
+  --window-on: 0.6; --lights-on: 0.85; --lights-glow: 0.6; --pool: 0.4;
+  --cottage-filter: brightness(0.88) saturate(1.05) sepia(0.12);
+  --cloud: rgba(255, 214, 190, 0.72);
+}
+
+body.time-night {
+  --sky-top: #070b1e; --sky-mid: #111a3b; --sky-bottom: #29255f;
+  --ground-top: #1f5a3a; --ground: #0a2a1c; --stem: #3f7f58; --dock: #10141f; --trail-show: 0.75; --grass-show: 0.6;
+  --hill-far: #182450; --hill-near: #14304a; --stone: #5d6a78;
+  --sky-ink: #fff7e0; --sky-ink-soft: #f3deb0;
+  --sun-opacity: 0; --moon-opacity: 1;
+  --window-on: 1; --lights-on: 1; --lights-glow: 1; --pool: 0.85;
+  --cottage-filter: brightness(0.5) saturate(0.75) hue-rotate(-10deg);
+  --cloud: rgba(58, 68, 112, 0.62);
+  --dock-ink: #efe9da; --dock-ink-soft: #b6b3a4;
+}
+
+body.is-raining { --cloud: rgba(120, 128, 148, 0.92); --sun-opacity: 0.2; }
+
+body.is-raining.time-day {
+  --cottage-filter: brightness(0.88) saturate(0.9);
+  --sky-ink: #fff7e0;
+  --sky-ink-soft: #f3e7cf;
+}
+
+/* ================= BASE ================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scrollbar-width: none;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+html::-webkit-scrollbar { display: none; }
+html:has(dialog[open]) { overflow: hidden; }
+
+body {
+  position: relative;
+  margin: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overscroll-behavior: none;
+  font-family: var(--font);
+  font-optical-sizing: auto;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--ground);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+::selection { background: var(--paper-deep); color: var(--ink); }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+h1, h2, h3, p { margin: 0; }
+
+.ico {
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ================= CIELO ================= */
+#skyBackground, #rainVeil, #starCanvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#skyBackground { z-index: -3; background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 30%, var(--sky-bottom) 52%); }
+#starCanvas { z-index: -2; width: 100%; height: 100%; }
+
+#rainVeil {
+  z-index: -1;
+  background: #667080;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+body.is-raining #rainVeil { opacity: 0.62; }
+body.is-raining.time-night #rainVeil { opacity: 0.35; }
+
+#ambientCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 140;
+  pointer-events: none;
+}
+
+/* ================= ESCENA ================= */
+.scene {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: clip;
+}
+
+.horizon {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  padding-top: var(--sky-pad);
+  font-size: var(--u);
+}
+
+/* ================= SOL Y LUNA ================= */
+.celestial-orbit {
+  --rx: 34vw;
+  --ry: calc(var(--sky-pad) + var(--cottage-h) - clamp(46px, 7dvh, 76px) - var(--safe-top));
+  position: absolute;
+  left: 64%;
+  top: calc(var(--sky-pad) + var(--cottage-h));
+  width: 0;
+  height: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: --orbit-angle 2.4s cubic-bezier(0.45, 0.05, 0.3, 1);
+}
+
+.celestial-sun, .celestial-moon {
+  position: absolute;
+  background: center / contain no-repeat;
+  transition: opacity 1.4s ease;
+  translate: -50% -50%;
+}
+
+.celestial-sun {
+  width: clamp(54px, 15vw, 84px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(calc(sin(var(--orbit-angle)) * var(--rx)), calc(cos(var(--orbit-angle)) * var(--ry) * -1));
+  background: radial-gradient(circle, #fff6c9 18%, #fcd34d 62%, #f5a623 100%);
+  box-shadow: 0 0 34px 10px rgba(253, 224, 71, 0.45);
+  opacity: var(--sun-opacity);
+}
+
+.celestial-moon {
+  width: clamp(56px, 15vw, 84px);
+  aspect-ratio: 1;
+  transform: translate(calc(sin(var(--orbit-angle) + 180deg) * var(--rx)), calc(cos(var(--orbit-angle) + 180deg) * var(--ry) * -1));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M68 8C46 8 22 24 20 52c-2 26 20 42 42 40 13-1 22-7 28-14-23 6-44-8-45-31-1-18 9-32 23-39z' fill='%23f3e6bd' stroke='%23fbf5e6' stroke-width='1.4'/%3E%3Cg fill='%23d9c78f'%3E%3Ccircle cx='34' cy='44' r='4'/%3E%3Ccircle cx='44' cy='70' r='3'/%3E%3Ccircle cx='38' cy='26' r='2.4'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: var(--moon-opacity);
+}
+
+/* ================= NUBES ================= */
+.clouds-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cloud {
+  position: absolute;
+  background: var(--cloud);
+  border-radius: 50px;
+  animation: cloudDrift linear infinite;
+  transition: background 1.5s ease;
+}
+
+.cloud::before, .cloud::after {
+  content: "";
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.cloud-1 { width: 96px; height: 30px; top: calc(var(--safe-top) + 12dvh); animation-duration: 64s; animation-delay: -12s; }
+.cloud-1::before { width: 38px; height: 38px; top: -18px; left: 14px; }
+.cloud-1::after { width: 28px; height: 28px; top: -11px; left: 46px; }
+
+.cloud-2 { width: 136px; height: 38px; top: 25dvh; animation-duration: 90s; animation-delay: -56s; }
+.cloud-2::before { width: 52px; height: 52px; top: -25px; left: 20px; }
+.cloud-2::after { width: 40px; height: 40px; top: -17px; left: 66px; }
+
+.cloud-3 { width: 80px; height: 26px; top: 8dvh; animation-duration: 76s; animation-delay: -38s; }
+.cloud-3::before { width: 30px; height: 30px; top: -14px; left: 16px; }
+.cloud-3::after { width: 24px; height: 24px; top: -9px; left: 40px; }
+
+@keyframes cloudDrift {
+  from { transform: translateX(-200px); }
+  to { transform: translateX(calc(100vw + 200px)); }
+}
+
+/* ================= EL BOSQUE A LO LEJOS ================= */
+.village {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: calc(36 * var(--u));
+  z-index: -1;
+}
+.hill-far { fill: var(--hill-far); }
+.hill-near { fill: var(--hill-near); }
+
+/* ================= PRADERA ================= */
+.meadow {
+  position: relative;
+  padding: clamp(66px, 19vw, 96px) 16px calc(var(--dock-space) + 28px);
+  font-size: var(--u);
+}
+
+.garden-ground {
+  position: absolute;
+  inset: -12px 0 0;
+  z-index: 3;
+  background: linear-gradient(180deg, var(--ground-top) 0, var(--ground) 420px);
+}
+
+/* La sombra que deja la casita sobre el pasto */
+.garden-ground::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: -6px;
+  height: 44px;
+  background: radial-gradient(closest-side, rgba(12, 40, 22, 0.34), rgba(12, 40, 22, 0));
+  transform: scaleX(1.1);
+}
+
+/* Matitas, tréboles y florecitas silvestres: el pasto no se ve liso */
+.garden-ground::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--grass) 0 var(--grass-y, 0) / var(--grass-size) repeat-y;
+  opacity: var(--grass-show, 1);
+  pointer-events: none;
+}
+
+.scene-object, .light-pool, .garden-path, .meadow-empty { z-index: 4; }
+
+/* Caminito de piedras: arranca en la puerta de la casita */
+.garden-path {
+  position: absolute;
+  top: -2px;
+  left: calc(50% - 6 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(24 * var(--u));
+  overflow: visible;
+  fill: var(--stone);
+  opacity: 0.55;
+}
+
+/* Luz de la ventana cayendo sobre el pasto */
+.light-pool {
+  position: absolute;
+  left: calc(50% - 7.5 * var(--u));
+  top: -6px;
+  width: calc(15 * var(--u));
+  height: calc(9 * var(--u));
+  background: linear-gradient(180deg, #f0c46e, transparent);
+  clip-path: polygon(14% 0, 84% 0, 100% 100%, 0 100%);
+  opacity: calc(var(--pool) * 0.2);
+  transition: opacity 1.5s ease;
+  pointer-events: none;
+}
+
+.scene-object {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 4px;
+  background: none;
+  border: 0;
+  transition: transform 0.25s var(--ease-settle);
+}
+.scene-object:active { transform: scale(0.96); }
+.scene-object svg { display: block; height: auto; overflow: visible; }
+.object-shadow { fill: rgba(25, 40, 15, 0.3); }
+
+.object-tag {
+  padding: 2px 10px 3px;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #fffbef;
+  background: rgba(14, 38, 24, 0.42);
+  border-radius: 8px;
+}
+
+#btnBench { left: max(1vw, 4px); top: 2px; }
+#btnBench svg { width: clamp(52px, 14vw, 96px); }
+#btnLoveLetters { right: max(1vw, 4px); top: 2px; }
+#btnLoveLetters svg { width: clamp(48px, 15vw, 90px); }
+
+#flowersContainer {
+  position: relative;
+  z-index: 20;
+  margin-inline: -16px;
+  /* Siempre queda una hilera libre al final: el jardín no se llena nunca */
+  height: calc(var(--row) * var(--rows, 3) + var(--fw));
+  pointer-events: none;
+}
+
+/* El caminito de las hadas, con faroles y hongos */
+#flowersContainer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--trail) 0 0 / var(--trail-size) repeat-y;
+  opacity: var(--trail-show, 1);
+}
+
+.meadow-empty {
+  position: absolute;
+  inset: 150px 16px auto;
+  text-align: center;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--on-ground);
+}
+
+.meadow-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--dock-space) + 12px);
+  z-index: 190;
+  translate: -50% 0;
+  padding: 3px 12px 4px;
+  white-space: nowrap;
+  font-size: 16px;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.meadow-hint[hidden] { display: none; }
+
+/* ================= CASITA ================= */
+/* El pasto sube delante de la casita, para que quede plantada y no flotando */
+.cottage-grass {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  z-index: 1;
+  width: 100%;
+  height: calc(3 * var(--u));
+  fill: var(--ground-top);
+  pointer-events: none;
+}
+
+.garden-cottage-wrapper { position: relative; }
+
+.cottage {
+  display: block;
+  width: var(--cottage-w);
+  height: var(--cottage-h);
+  overflow: visible;
+}
+
+.cottage-lit {
+  filter: var(--cottage-filter);
+  transition: filter 1.5s ease;
+}
+
+.cottage-over {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lit { opacity: var(--window-on); transition: opacity 1.5s ease; }
+
+.sign { cursor: default; }
+.sign-text { font-family: var(--font); font-style: italic; font-size: 26px; fill: #fbf3e2; letter-spacing: 0.01em; }
+
+.smoke path {
+  stroke: #ffffff;
+  stroke-width: 3.4;
+  opacity: 0;
+  transform-box: fill-box;
+  animation: smokeRise 5.5s ease-out infinite;
+}
+.smoke path:last-child { animation-delay: -2.7s; }
+
+/* Polvo de hadas alrededor de la casita */
+.sparkles path { transform-box: fill-box; transform-origin: center; animation: twinkle 3.6s ease-in-out infinite; }
+.sparkles path:nth-child(2) { animation-delay: -0.8s; }
+.sparkles path:nth-child(3) { animation-delay: -1.5s; }
+.sparkles path:nth-child(4) { animation-delay: -2.2s; }
+.sparkles path:nth-child(5) { animation-delay: -2.9s; }
+.sparkles path:nth-child(6) { animation-delay: -3.3s; }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes smokeRise {
+  0% { opacity: 0; transform: translateY(14px); }
+  25% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(-34px) translateX(8px); }
+}
+
+/* ================= GUIRNALDA DE LUCES ================= */
+#fairyLights {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.fairy-rope { fill: none; stroke: #4a3a2c; stroke-width: 1.2; opacity: 0.8; }
+.fairy-pole { fill: #4e3523; }
+.fairy-glow { fill: #f1c969; opacity: calc(var(--lights-glow) * 0.26); transition: opacity 1.5s ease; }
+.fairy-bulb {
+  fill: #f6dc8e;
+  opacity: var(--lights-on);
+  transition: opacity 1.5s ease;
+}
+
+/* ================= FLORES ================= */
+.flower-item {
+  position: absolute;
+  left: var(--x);
+  top: calc(var(--row) * (var(--r) + 1) + var(--fw) + var(--n, 0px));
+  width: var(--fw);
+  aspect-ratio: 120 / 220;
+  padding: 0;
+  background: none;
+  border: 0;
+  pointer-events: auto;
+  transform: translate(-50%, -100%) scale(var(--s, 1));
+  transform-origin: bottom center;
+}
+
+.flower-body, .flower-sway { position: absolute; inset: 0; transform-origin: bottom center; }
+
+.flower-body { transition: transform 0.3s var(--ease-settle); }
+.flower-item:active .flower-body { transform: scale(0.97); }
+
+/* Solo se mecen las que están a la vista */
+.flower-item.is-near .flower-sway {
+  animation: windSway 5.5s ease-in-out infinite alternate;
+  animation-delay: var(--sway-delay, 0s);
+}
+
+body.is-raining .flower-item.is-near .flower-sway { animation-duration: 2.8s; }
+
+@keyframes windSway {
+  from { transform: rotate(-1.2deg); }
+  to { transform: rotate(1.5deg); }
+}
+
+.flower-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.flower-item .flower-stem, .panel-preview__art .flower-stem { stroke: var(--stem); }
+.flower-item .flower-leaves, .panel-preview__art .flower-leaves { fill: var(--stem); }
+
+.flower-name {
+  position: absolute;
+  left: 50%;
+  top: -6%;
+  z-index: 3;
+  width: max-content;
+  max-width: 200px;
+  padding: 2px 9px 3px;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: 6px;
+  transform: translate(-50%, 4px) scale(calc(1 / var(--s, 1)));
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.3s var(--ease-out);
+  pointer-events: none;
+}
+.flower-item:focus-visible .flower-name { opacity: 1; transform: translate(-50%, 0) scale(calc(1 / var(--s, 1))); }
+
+@media (hover: hover) {
+  .flower-item:hover { z-index: 200 !important; }
+  .flower-item:hover .flower-name { opacity: 1; transform: translate(-50%, 0) scale(calc(1 / var(--s, 1))); }
+  .flower-item:hover .flower-body { transform: translateY(-3px); }
+  .scene-object:hover { transform: translateY(-2px); }
+  .time-btn:hover { opacity: 0.65; }
+  .dock-btn:hover { color: var(--dock-ink); }
+  .sheet-close:hover { color: var(--ink); }
+  .btn--sun:hover { background: #33423a; }
+  .btn--soft:hover { background: var(--paper-deep); }
+  button.memory-row:hover { background: var(--paper-deep); }
+  .tab:hover { color: var(--ink); }
+  .type-option:hover { background: var(--paper-deep); }
+}
+
+.flower-meter {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  z-index: 3;
+  width: 42px;
+  height: 3px;
+  translate: -50% 0;
+  background: rgba(250, 247, 239, 0.55);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.flower-meter i {
+  display: block;
+  height: 100%;
+  width: var(--level, 100%);
+  background: var(--water);
+  border-radius: 2px;
+  transition: width 0.9s var(--ease-out);
+}
+
+body.watering-mode .flower-meter { opacity: 1; }
+
+/* Crecimiento de la flor */
+.sprouting-stem, .sprouting-head { transform-box: fill-box; }
+
+.sprouting-stem {
+  transform-origin: bottom center;
+  animation: stemGrow 1.8s var(--ease-out) both;
+}
+
+.sprouting-head {
+  transform-origin: center;
+  animation: blossomOpen 1.5s 0.75s var(--ease-settle) both;
+}
+
+@keyframes stemGrow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes blossomOpen {
+  from { transform: scale(0) rotate(-40deg); }
+  to { transform: scale(1) rotate(0); }
+}
+
+/* ================= RIEGO ================= */
+#waterLayer, #butterflies {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#waterLayer { z-index: 125; }
+#butterflies { z-index: 130; }
+
+.watering-can {
+  position: absolute;
+  width: 62px;
+  height: 62px;
+  margin: -62px 0 0 -6px;
+  transform-origin: 20% 60%;
+  animation: canPour 1.5s var(--ease-out) both;
+}
+.watering-can svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+@keyframes canPour {
+  0% { opacity: 0; transform: translate(20px, -18px) rotate(10deg); }
+  18% { opacity: 1; transform: rotate(0deg); }
+  36%, 78% { opacity: 1; transform: rotate(-22deg); }
+  100% { opacity: 0; transform: translate(14px, -14px) rotate(4deg); }
+}
+
+.water-droplet {
+  position: absolute;
+  width: 4px;
+  height: 8px;
+  background: #cfe4ec;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: dropFall 0.72s cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+}
+
+@keyframes dropFall {
+  0% { opacity: 0; transform: translateY(0) scale(0.7); }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(var(--fall, 90px)) scale(1.15); }
+}
+
+.floating-heart {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  color: var(--heart, #b4552d);
+  animation: floatUp 1.7s var(--ease-out) both;
+}
+.floating-heart svg { display: block; width: 100%; height: 100%; }
+
+@keyframes floatUp {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift, 8px), -80px) scale(1.1); }
+}
+
+.flower-happy .flower-body { animation: happyBounce 0.85s var(--ease-out); }
+
+@keyframes happyBounce {
+  0%, 100% { transform: scale(1); }
+  28% { transform: scale(1.08, 0.95); }
+  52% { transform: scale(0.98, 1.05) translateY(-6px); }
+  76% { transform: scale(1.01, 0.99); }
+}
+
+/* ================= EL HADA Y LAS MARIPOSAS ================= */
+.butterfly {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 22px;
+  margin: -11px 0 0 -13px;
+  padding: 0;
+  background: none;
+  border: 0;
+  pointer-events: auto;
+  will-change: transform;
+  transition: opacity 1s ease;
+}
+.butterfly svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.butterfly .wing { transform-box: fill-box; animation: flap 0.26s ease-in-out infinite alternate; }
+.butterfly .wing--l { transform-origin: right center; }
+.butterfly .wing--r { transform-origin: left center; }
+.butterfly.is-perched .wing { animation-duration: 1.5s; }
+.butterfly.is-gone { opacity: 0; pointer-events: none; }
+.butterfly.is-fairy { width: 38px; height: 32px; margin: -16px 0 0 -19px; }
+
+@keyframes flap {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0.28); }
+}
+
+/* ================= ENCABEZADO: SE VA CON EL CIELO AL BAJAR ================= */
+.topbar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: calc(var(--safe-top) + 14px) 10px 8px 18px;
+  pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
+
+.brand { margin-right: auto; color: var(--sky-ink); transition: color 1.2s ease; }
+
+.brand h1 {
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  margin-top: 2px;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--sky-ink-soft);
+  transition: color 1.2s ease;
+}
+
+.topbar-quote {
+  display: none;
+  max-width: 34ch;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.3;
+  text-align: right;
+  color: var(--sky-ink-soft);
+  transition: color 1.2s ease;
+}
+
+@media (min-width: 1100px) { .topbar-quote { display: block; margin-top: 4px; } }
+
+.time-btn {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  width: 52px;
+  min-height: 48px;
+  padding: 2px 0;
+  font-size: 13px;
+  line-height: 1.1;
+  color: var(--sky-ink);
+  background: none;
+  border: 0;
+  transition: color 1.2s ease, opacity 0.2s ease;
+}
+.time-btn:active { opacity: 0.6; }
+
+/* ================= BARRA DE HERRAMIENTAS ================= */
+.dock {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 200;
+  padding-bottom: var(--safe-bottom);
+  background: var(--dock);
+}
+
+.dock-inner {
+  display: flex;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.dock-btn {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 60px;
+  padding: 5px 2px 4px;
+  font-size: 13px;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: var(--dock-ink-soft);
+  background: none;
+  border: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.dock-btn:active { transform: scale(0.95); }
+.dock-btn[hidden] { display: none; }
+.dock-btn[aria-pressed="true"] { color: var(--dock-ink); font-weight: 600; }
+
+/* Lo activo se marca con una raya recta */
+.dock-btn[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 28px;
+  height: 2px;
+  translate: -50% 0;
+  background: currentColor;
+}
+
+/* ================= HOJAS: SUBEN DESDE ABAJO COMO EN UNA APP ================= */
+dialog.sheet {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: calc(var(--safe-top) + 26px) 0 0;
+  border: 0;
+  background: transparent;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+dialog.sheet::-webkit-scrollbar { display: none; }
+dialog.sheet[open] { display: grid; align-items: end; justify-items: center; }
+dialog.sheet::backdrop { background: rgba(20, 24, 18, 0.45); animation: fadeIn 0.3s ease both; }
+dialog.sheet.is-closing { opacity: 0; transition: opacity 0.18s ease; }
+dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; }
+
+.fx-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  padding: 32px 22px calc(var(--safe-bottom) + 28px);
+  background: var(--paper);
+  border-radius: 16px 16px 0 0;
+  animation: cardIn 0.42s var(--ease-out) both;
+}
+
+/* El asa para deslizar y cerrar */
+.sheet-grab {
+  position: absolute;
+  inset: 0 56px auto;
+  height: 28px;
+  touch-action: none;
+  cursor: grab;
+}
+.sheet-grab::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 36px;
+  height: 3px;
+  translate: -50% 0;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.card h2 {
+  padding-right: 34px;
+  font-size: clamp(26px, 7vw, 30px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: var(--ink);
+}
+
+.card-lead { margin-top: 6px; font-size: 17px; color: var(--ink-soft); line-height: 1.4; }
+.card-subtitle { margin: 30px 0 6px; font-weight: 400; font-size: 21px; }
+.card-note { font-size: 16px; line-height: 1.45; color: var(--ink-soft); }
+
+@keyframes cardIn {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes fadeIn { from { opacity: 0; } }
+
+.sheet-close {
+  /* Se queda a la vista aunque la hoja sea larga */
+  position: sticky;
+  top: calc(var(--safe-top) + 6px);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -26px -14px -44px auto;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 0;
+  border-radius: 50%;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 10px 18px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  color: var(--ink);
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn:active { transform: scale(0.98); }
+.btn[hidden] { display: none; }
+.btn--sun { background: var(--ink); color: var(--paper); }
+.btn--soft { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.btn[disabled] { opacity: 0.55; cursor: progress; }
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 4px 6px;
+  font-size: 16px;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.btn-link .ico { width: 18px; height: 18px; }
+.btn-link[disabled] { opacity: 0.55; cursor: progress; }
+
+/* ================= RECUERDO DE LA FLOR ================= */
+.memory-head { text-align: center; }
+.memory-head h2 { padding: 0 8px; }
+
+.memory-flower { display: block; width: 88px; height: 88px; margin: 0 auto 8px; }
+.memory-flower .flower-svg { height: 100%; }
+
+.memory-type { font-style: italic; font-size: 16px; color: var(--ink-soft); }
+.memory-date { margin-top: 5px; font-style: italic; font-size: 16px; line-height: 1.3; color: var(--ink-soft); }
+
+.tabs { display: flex; gap: 18px; margin: 20px 0 16px; border-bottom: 1px solid var(--line); }
+
+.tab {
+  position: relative;
+  min-height: 44px;
+  padding: 6px 0 9px;
+  margin-bottom: -1px;
+  font-size: 16px;
+  line-height: 1.15;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+
+.tab-panel { animation: panelIn 0.3s var(--ease-out) both; }
+@keyframes panelIn { from { opacity: 0; } }
+
+#modalLetter {
+  font-size: 20px;
+  line-height: 1.55;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+.letter-signature {
+  margin-top: 14px;
+  text-align: right;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--ink-soft);
+}
+
+.polaroids {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.polaroid { margin: 0; }
+.polaroid img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: var(--paper-deep); border-radius: 4px; }
+.polaroid figcaption {
+  padding-top: 6px;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+.meaning-card h3 { font-weight: 400; font-size: 21px; color: var(--ink); }
+.meaning-card p { margin-top: 6px; font-size: 19px; font-style: italic; line-height: 1.45; color: var(--ink); max-width: 62ch; }
+
+.water-state {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 10px;
+  margin-top: 20px;
+  padding-top: 12px;
+  font-size: 16px;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+}
+.water-state strong { color: var(--water); font-weight: 500; font-style: italic; }
+
+.memory-actions { display: grid; gap: 8px; margin-top: 12px; }
+
+.memory-export {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+.memory-export > span { margin-right: auto; }
+
+/* ================= CEREMONIA: PÁGINA ENTERA ================= */
+.card--sprout {
+  align-self: stretch;
+  max-width: none;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  padding-top: calc(var(--safe-top) + 10px);
+  border-radius: 0;
+  animation: pageIn 0.5s ease both;
+}
+@keyframes pageIn { from { opacity: 0; } }
+#sproutCelebrationModal { padding-top: 0; }
+.card--sprout h2 { order: -2; padding: 26px 0 0; font-size: clamp(32px, 9vw, 40px); }
+.card--sprout p { order: -1; margin: 6px auto 0; max-width: 30ch; font-style: italic; font-size: 19px; line-height: 1.35; color: var(--ink-soft); }
+.card--sprout .btn { width: min(100%, 420px); margin: 14px auto 0; }
+
+.sprout-ground {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 340px;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.sprout-ground:focus-visible { outline: none; }
+.sprout-ground[data-phase]:not([data-phase="seed"]) { cursor: default; }
+
+.sprout-soil {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(84vw, 340px);
+  translate: -50% 0;
+  overflow: visible;
+}
+
+.sprout-seed { transform-box: fill-box; transform-origin: center bottom; animation: seedWiggle 1.5s ease-in-out infinite; }
+[data-phase="sprout"] .sprout-seed, [data-phase="bloom"] .sprout-seed { animation: seedSink 0.5s ease-in both; }
+
+@keyframes seedWiggle {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(6deg) translateY(-2px); }
+}
+@keyframes seedSink { to { transform: translateY(16px) scale(0.5); opacity: 0; } }
+
+.sprout-seedling {
+  position: absolute;
+  left: 50%;
+  bottom: min(16vw, 66px);
+  width: 130px;
+  translate: -50% 0;
+  overflow: visible;
+  opacity: 0;
+}
+[data-phase="sprout"] .sprout-seedling { opacity: 1; }
+[data-phase="sprout"] .sprout-stem { transform-box: fill-box; transform-origin: bottom; animation: stemGrow 0.9s var(--ease-out) both; }
+[data-phase="sprout"] .sprout-leaf { transform-box: fill-box; animation: blossomOpen 0.8s 0.35s var(--ease-settle) both; }
+.sprout-leaf--l { transform-origin: bottom right; }
+.sprout-leaf--r { transform-origin: bottom left; }
+
+.sprout-flower {
+  position: absolute;
+  left: 50%;
+  bottom: min(14vw, 58px);
+  height: min(48dvh, 400px);
+  aspect-ratio: 120 / 220;
+  translate: -50% 0;
+}
+
+/* ================= BANQUITA ================= */
+.bench-quote {
+  margin: 14px 0 20px;
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink);
+}
+#benchModal .btn { width: 100%; }
+
+/* ================= BUZÓN ================= */
+.envelopes { display: grid; margin-top: 14px; border-top: 1px solid var(--line); }
+
+.envelope { border-bottom: 1px solid var(--line); }
+
+.envelope summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 2px;
+  font-size: 18px;
+  line-height: 1.25;
+  cursor: pointer;
+  list-style: none;
+}
+.envelope summary::-webkit-details-marker { display: none; }
+.envelope summary svg { flex: none; width: 26px; height: 19px; }
+.envelope .flap { transform-box: fill-box; transform-origin: top; transition: transform 0.4s var(--ease-out); }
+.envelope[open] .flap { transform: scaleY(-1); }
+
+.envelope p {
+  padding: 2px 4px 16px;
+  font-size: 19px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink);
+  animation: panelIn 0.4s var(--ease-out) both;
+}
+
+/* ================= RECUERDOS ================= */
+.memory-list { display: grid; margin: 12px 0 0; padding: 0; list-style: none; max-height: 36dvh; overflow-y: auto; border-top: 1px solid var(--line); }
+.memory-list li { border-bottom: 1px solid var(--line); }
+
+.memory-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 60px;
+  padding: 6px 2px;
+  text-align: left;
+  background: none;
+  border: 0;
+}
+.memory-row__art { flex: none; width: 40px; height: 40px; }
+.memory-row__art .flower-svg { height: 100%; }
+.memory-row__text { min-width: 0; flex: 1; }
+.memory-row__text strong { display: block; font-size: 17px; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.memory-row__text small { font-size: 15px; font-style: italic; color: var(--ink-soft); }
+
+.backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.backup-actions .btn { font-size: 16px; padding-inline: 8px; }
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 50px;
+  margin-top: 14px;
+  padding-top: 8px;
+  font-size: 17px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.switch-row input { width: 22px; height: 22px; accent-color: var(--ink); cursor: pointer; }
+
+/* ================= PANEL ================= */
+.card--panel { max-width: 640px; }
+
+#formCreateFlower { display: grid; gap: 18px; margin-top: 20px; }
+
+.panel-preview { display: flex; gap: 14px; align-items: stretch; }
+
+.panel-preview__art {
+  flex: none;
+  width: 104px;
+  min-height: 190px;
+  padding: 8px;
+  background: var(--ground);
+  border-radius: 10px;
+}
+.panel-preview__art .flower-svg { height: 100%; }
+
+.type-picker { flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; }
+.type-picker legend, .field-label, .field label {
+  display: block;
+  margin-bottom: 4px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+#typePicker { display: grid; gap: 2px; }
+
+.type-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 3px 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.type-option:has(input:checked) { background: var(--paper-deep); font-weight: 600; }
+.type-option:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.type-option input { position: absolute; opacity: 0; pointer-events: none; }
+
+.field { min-width: 0; }
+.field-pair { display: grid; gap: 18px; }
+@media (min-width: 560px) { .field-pair { grid-template-columns: 1fr 1fr; } }
+
+.field input[type="text"], .field input[type="url"], .field input[type="date"], .field select, .field textarea {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  padding: 9px 12px;
+  font-size: 17px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  caret-color: var(--accent);
+  transition: border-color 0.2s ease;
+}
+.field textarea { resize: vertical; line-height: 1.45; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.field input::placeholder, .field textarea::placeholder { color: #6d7566; }
+.field input[type="url"] { margin-top: 6px; font-size: 16px; }
+.field input[type="file"] { display: block; width: 100%; font-size: 15px; color: var(--ink-soft); }
+.field input[type="file"]::file-selector-button {
+  min-height: 40px;
+  margin-right: 8px;
+  padding: 4px 12px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper-deep);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#customMusicFields { display: grid; gap: 6px; margin-top: 8px; }
+#customMusicFields[hidden] { display: none; }
+
+.field-help { margin-top: 5px; font-size: 15px; line-height: 1.35; color: var(--ink-soft); }
+.field-help.is-warning { color: var(--error); font-weight: 500; }
+.field-error { margin-top: 5px; font-size: 15px; font-weight: 500; line-height: 1.35; color: var(--error); }
+
+.color-row { display: flex; align-items: center; gap: 10px; }
+#inputFlowerColor { width: 46px; height: 42px; padding: 2px; background: #fff; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+
+.color-preset {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  background: var(--c);
+  border: 0;
+  border-radius: 50%;
+}
+.color-preset[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+
+.panel-actions { display: grid; gap: 8px; }
+@media (min-width: 560px) { .panel-actions { grid-template-columns: 2fr 1fr; } }
+
+#qrResultSection[hidden] { display: none; }
+
+.qr-frame {
+  display: grid;
+  place-items: center;
+  width: min(100%, 280px);
+  margin: 10px auto 0;
+  padding: 14px;
+  background: #fff;
+  border-radius: 10px;
+}
+/* qrcodejs alterna entre canvas e img según el navegador: siempre se muestra el canvas */
+.qr-frame img { display: none !important; }
+.qr-frame canvas { display: block !important; width: 100%; height: auto; }
+
+.qr-quality { margin-top: 10px; text-align: center; font-size: 16px; line-height: 1.4; color: var(--ink-soft); }
+
+.package-steps { margin: 14px 0 0; padding-left: 22px; font-size: 16px; line-height: 1.45; }
+.package-steps code { font-size: 14px; padding: 1px 5px; background: var(--paper-deep); border-radius: 4px; }
+.package-steps[hidden] { display: none; }
+
+.qr-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+.qr-actions .btn { flex: 1 1 150px; font-size: 16px; }
+
+.memory-list--admin { max-height: 240px; }
+.memory-list--admin .btn-link { flex: none; }
+
+/* ================= AVISOS ================= */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--dock-space) + 14px);
+  z-index: 300;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 8px 14px 9px;
+  translate: -50% 0;
+  font-size: 16px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: 8px;
+  animation: toastIn 0.35s var(--ease-out) both;
+}
+.toast.is-leaving { opacity: 0; transition: opacity 0.3s ease; }
+
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } }
+
+/* ================= CELULAR ACOSTADO ================= */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --u: 1.5dvh;
+    --cottage-w: calc(40 * var(--u));
+    --cottage-h: calc(38.9 * var(--u));
+    --sky-pad: calc(10px + var(--safe-top));
+    --fw: 96px;
+    --dock-space: calc(50px + var(--safe-bottom));
+  }
+  .dock-btn { min-height: 50px; padding-block: 2px; }
+  .dock-btn .ico { width: 19px; height: 19px; }
+  #btnBench svg { width: 62px; }
+  #btnLoveLetters svg { width: 46px; }
+  .meadow { padding-top: 8px; }
+  .meadow-hint { display: none; }
+}
+
+/* ================= MOVIMIENTO REDUCIDO ================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .cloud { animation: none; left: 12%; }
+  .cloud-2 { left: 62%; }
+  .cloud-3 { left: 78%; }
+  .smoke path { opacity: 0.5; }
+}
