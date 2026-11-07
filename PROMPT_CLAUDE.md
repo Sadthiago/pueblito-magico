@@ -22,7 +22,7 @@ El proyecto es una experiencia web interactiva, romántica e íntima, creada por
 
 ## 2. 🎨 Referencias de Diseño e Inspiraciones Creativas
 
-**Dirección actual: un jardín de hadas donde las flores son lo que más resalta, pensado primero para el celular.** Arriba, una casita de piedra de cuento, cubierta de buganvilias y glicinas, con un bosque detrás. Abajo, macetitas de barro que bajan sin tope por los dos lados de un caminito con faroles y hongos. Cada flor es grande, de colores vivos y con volumen, sin brillos alrededor. Un hada vuela entre las mariposas. Sin contornos de tinta ni grano de papel. Una sola familia tipográfica.
+**Dirección actual: el estilo del juego de mascotas que Santiago y su novia juegan juntos, pensado primero para el celular.** Todo es redondito, de colores pastel planos y con un contorno grueso color chocolate (`#4a3226`), como stickers. Arriba, una casita de hadas con techo de tejas redondas, buganvilia y glicina, entre colinas y arbolitos. Abajo, macetitas pastel que bajan sin tope por los dos lados de un caminito con faroles, hongos, arbustos y caracoles. Cinco mascoticas pasean por la pradera: Oreo, Panpan y Sky (sus mascotas del juego) y Kuromi y Melody (su gatica y su perrita de verdad). Letras redonditas: `Fredoka` para títulos e interfaz y `Nunito` para las cartas.
 
 Referencias de las que partió el proyecto, hoy reducidas a lo esencial:
 
@@ -34,7 +34,7 @@ Referencias de las que partió el proyecto, hoy reducidas a lo esencial:
    - Selector y ciclo continuo de horas: **Día Soleado (☀️)**, **Atardecer Dorado (🌅)** y **Noche Estrellada (🌙)**.
    - Sol y Luna montados en una órbita radial CSS (`--orbit-angle`) que rotan sobre el horizonte con iluminación contextual.
 4. **Matt Cannon & Nate Wiley (CodePen - Flores Procedimentales):**
-   - Ilustraciones SVG generadas por código: pétalos con degradados de la base a la punta, nervaduras y halo, sin contorno de tinta.
+   - Ilustraciones SVG generadas por código: pétalos de colores planos con contorno grueso color chocolate.
 5. **Estética Scrapbook / Polaroid:**
    - Fotos sobrias con pie de texto y carta sobre papel liso (`#faf7ef`), sin cinta, rotación ni renglones.
 
@@ -48,7 +48,7 @@ Referencias de las que partió el proyecto, hoy reducidas a lo esencial:
 - **Core:** HTML5, CSS3 moderno (estilos propios en `style.css`, sin Tailwind), Vanilla JavaScript (ES6+).
 - **Librerías externas (vía CDN):**
   - **Google Fonts:**
-    - `Newsreader` (la única familia: títulos, interfaz y cartas).
+    - `Fredoka` (títulos, interfaz, letrero) y `Nunito` (cartas y textos largos).
   - **Iconos:** dibujados como `<symbol>` dentro de `index.html`; no hay librería de iconos.
   - **Canvas Confetti (`canvas-confetti`):** Explosión festiva al brotar flores o regar el jardín.
   - **QRCode.js (`qrcodejs`):** Generador instantáneo de códigos QR en el cliente.
@@ -84,22 +84,27 @@ jardin-flores-magicas/
 - En `script.js`, existe un modo manual y un modo automático de paso del tiempo (`isAutoCycling`) que avanza cada 15 segundos. Al abrir, la hora inicial sale del reloj real.
 
 ### B. Generador de Flores SVG (`createFlowerSVG`)
-Ubicado en `script.js`. Sin contorno: el volumen lo dan los degradados de cada pétalo. Cada flor usa una semilla, así que varía un poco y cada una se ve siempre igual:
+Ubicado en `script.js`. Colores planos con contorno grueso (`INK`, `OUTLINE`); el tallo lleva un trazo oscuro debajo para verse contorneado. Cada flor usa una semilla, así que varía un poco y cada una se ve siempre igual:
 1. `astromelia`: Un solo tallo que se abre en un ramito de cuatro flores con pétalos rayados y dos capullos. Es la flor del ramo real que Santiago regaló y el tipo por defecto.
 1. `sunflower`: Girasol con dos coronas de pétalos en punta, nervaduras y disco con semillas en espiral.
 2. `rose`: Rosa de cuatro capas de pétalos redondos, cada uno encima del anterior, con espiral central.
 3. `tulip`: Tulipán de tres pétalos delanteros y corola trasera, con dos hojas largas.
 4. `daisy`: Margarita de dos coronas de pétalos redondos y centro punteado.
 5. `wildflower`: Cosmos de ocho pétalos con la punta hendida, nervaduras y un capullo a un lado.
-- Los degradados nacen en el centro de la flor (`radial`), así un anillo entero sigue siendo un solo trazado (`petalRing`). Una flor pesa cerca de 5 KB.
-- Cada flor lleva sus degradados con un id único (`flowerUid`), porque también se exporta sola como imagen.
-- `flowerPot` dibuja una maceta de urna pintada a mano, con hiedra y florecitas del color de la flor; la semilla elige el barro, el adorno (corazón, florecita o guirnalda) y el lado de la hiedra.
+- Un anillo entero de pétalos sigue siendo un solo trazado (`petalRing`). La astromelia usa un id único (`flowerUid`) para repetir su flor con `<use>`, porque también se exporta sola como imagen.
+- `flowerPot` dibuja una macetita redonda en tonos pastel (durazno, rosa, crema, menta, lila o cielo), con hiedra y florecitas del color de la flor; la semilla elige el color, el adorno (corazón, florecita o puntitos) y el lado de la hiedra.
 - `flowerPalette` saca cuatro tonos de cualquier color y sube la saturación de lo que tiene color; lo pálido sigue pálido. Colores sugeridos en el panel: `#e3ae2b`, `#d98a2b`, `#edd27a`, `#c9602e`.
 
 ### B2. Siembra del jardín (`flowerSlot`)
 - Las macetas bajan a los dos lados de un caminito que serpentea: 2 carriles en celular y hasta 8 en pantallas grandes (`columnsForWidth`).
 - Una flor nueva no mueve a las demás: siempre queda más abajo que la anterior y alarga el campo.
-- `drawGardenTrail` dibuja el caminito, los faroles y los hongos una sola vez, como un fondo que se repite (`--trail`).
+- `drawGardenTrail` dibuja el caminito una sola vez como fondo (`--trail`). El fondo mide tres tramos y en cada uno los faroles, hongos, arbustos, piedras, caracoles y florecitas caen en otro sitio, así no se nota que se repite.
+- `drawGrass` pinta el pasto en tres capas de alto distinto (claros de sol, matitas con tréboles y florecitas), así sus repeticiones casi nunca coinciden. Las florecitas esquivan el caminito.
+
+### B3. Mascoticas (`Pets`) y el sol que se agarra
+- `Pets` dibuja a Oreo (perrito con alitas de murciélago y chupo), Panpan (panda con moño y camiseta de rayas), Sky (pingüino disfrazado de calabaza con gafas verdes), Kuromi (gatica blanca y negra con collar morado) y Melody (perrita peludita blanca con orejas color caramelo).
+- Caminan por la parte visible de la pradera, a veces piensan en algo (globito con hueso, pescado, bambú, flor, estrella o corazón) y al tocarlas saltan, dicen su nombre y sueltan corazones. De noche duermen con los ojitos cerrados.
+- El sol y la luna son botones: arrastrarlos de lado cambia la hora y al soltarlos se acomodan; un toque pasa a la hora siguiente.
 - Solo se mecen las flores cerca de la pantalla (`IntersectionObserver` y clase `is-near`).
 
 ### C. Almacenamiento y Protocolo de Código QR (`flowers-data.js`)

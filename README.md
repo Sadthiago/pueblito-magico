@@ -50,9 +50,11 @@ Al escanear, ella toca la tierra, la semilla brota y la flor queda plantada para
 
 ## Qué hay en el jardín
 
-- **Ciclo celeste:** día, atardecer y noche con sol y luna en órbita. Arranca según la hora real. El botón de arriba a la derecha va pasando de hora, y en **Auto** el tiempo avanza solo cada 15 segundos.
-- **La casita:** de piedra y de cuento de hadas, cubierta de buganvilias y glicinas, con un bosque detrás.
-- **El campo:** sin tope. Cada flor vive en su macetita, y las macetas bajan por los dos lados de un caminito con faroles y hongos; se recorre deslizando el dedo.
+- **Ciclo celeste:** día, atardecer y noche con sol y luna en órbita. Arranca según la hora real. El sol y la luna se agarran: arrástralos para cambiar la hora o tócalos para pasar a la siguiente. El botón de arriba a la derecha también va pasando de hora, y en **Auto** el tiempo avanza solo cada 15 segundos.
+- **El estilo:** como el juego de mascotas de los dos: todo redondito, en colores pastel y con contorno grueso color chocolate.
+- **La casita:** de hadas, con techo de tejas redondas, buganvilias y glicinas, entre colinas y arbolitos.
+- **Las mascoticas:** Oreo, Panpan y Sky (las del juego) y Kuromi y Melody (la gatica y la perrita de verdad) pasean por la pradera. Si las tocas, saltan y dicen su nombre; de noche duermen.
+- **El campo:** sin tope. Cada flor vive en su macetita pastel, y las macetas bajan por los dos lados de un caminito con faroles, hongos, arbustos y caracoles que no se repiten igual; se recorre deslizando el dedo.
 - **Atmósfera:** nubes, polvo de hadas, guirnalda de luces, estrellas y luciérnagas; pétalos solo cuando brota una flor.
 - **Regadera:** al tocar una flor llega la regadera, caen gotas con sonido, la flor rebota y salen corazones. Sin riego pierde brillo muy despacio, pero nunca baja del 55 %.
 - **Lluvia:** con sonido de gotas en el tejado. Si dura un ratico, riega todo el jardín.

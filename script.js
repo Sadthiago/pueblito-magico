@@ -5,7 +5,7 @@
  */
 
 // ================= GENERADOR DE FLORES SVG =================
-// Sin contorno de tinta: el volumen lo dan los degradados de cada pétalo. Cada flor vive en su macetita y es lo que más resalta.
+// Al estilo de nuestras mascoticas: colores planos y vivos con un contorno grueso color chocolate. Cada flor vive en su macetita y es lo que más resalta.
 function shade(hex, amount) {
   const value = parseInt(hex.slice(1), 16);
   const target = amount > 0 ? 255 : 0;
@@ -65,7 +65,9 @@ function flowerPalette(hex) {
   };
 }
 
-const STEM = '#2f4a33';
+const STEM = '#4aa152';
+const INK = '#4a3226';
+const OUTLINE = `stroke="${INK}" stroke-width="1.9" stroke-linejoin="round"`;
 const f1 = (value) => value.toFixed(1);
 let flowerUid = 0;
 
@@ -135,58 +137,52 @@ const BLOSSOMS = {
       });
     });
     const blossom = (x, y, rotation, scale) => `<use href="#${id}f" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 18)}) scale(${scale})"/>`;
-    return `<defs>${radial(`${id}a`, 33, [[0.1, p.core], [0.42, p.deep], [0.78, p.base], [1, p.tip]])}${radial(`${id}b`, 30, [[0.08, p.core], [0.34, p.deep], [0.62, p.base], [1, p.tip]])}
-      <g id="${id}f"><path fill="url(#${id}a)" stroke="${p.deep}" stroke-width=".5" d="${petalRing(3, 'tepal', 33, 13.5, random)}"/>
-      <path fill="url(#${id}b)" stroke="${p.deep}" stroke-width=".5" d="${petalRing(3, 'tepal', 30, 10.5, random, { offset: 60 })}"/>
+    return `<defs>
+      <g id="${id}f"><path fill="${p.base}" ${OUTLINE} d="${petalRing(3, 'tepal', 33, 13.5, random)}"/>
+      <path fill="${p.tip}" ${OUTLINE} d="${petalRing(3, 'tepal', 30, 10.5, random, { offset: 60 })}"/>
       <path fill="none" stroke="${p.core}" stroke-width="1" stroke-linecap="round" d="${streaks}"/>
-      <circle r="4.5" fill="${p.core}"/>
+      <circle r="4.5" fill="${p.core}" ${OUTLINE}/>
       <path fill="none" stroke="#f3e2a6" stroke-width=".9" stroke-linecap="round" d="M0,1Q-3,8 -6,14M0,1Q-1,9 -1,16M0,1Q2,9 4,15M0,1Q4,6 8,11"/>
       <path fill="none" stroke="#7a4a1a" stroke-width="2" stroke-linecap="round" d="M-6,14h.01M-1,16h.01M4,15h.01M8,11h.01"/></g></defs>
-      <g class="flower-leaves" fill="${STEM}">${leaf(-16, 24, 158, 34, 7)}${leaf(16, 26, 22, 34, 7)}</g>
-      <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
-      <ellipse cx="-40" cy="-39" rx="5" ry="9" transform="rotate(-28 -40 -39)" fill="${p.deep}"/><ellipse cx="42" cy="-37" rx="4.5" ry="8.5" transform="rotate(32 42 -37)" fill="${p.base}"/>
+      <g class="flower-leaves" fill="${STEM}" ${OUTLINE}>${leaf(-16, 24, 158, 34, 7)}${leaf(16, 26, 22, 34, 7)}</g>
+      <path fill="none" stroke="${INK}" stroke-width="5.4" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
+      <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2.2" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
+      <ellipse cx="-40" cy="-39" rx="5" ry="9" transform="rotate(-28 -40 -39)" fill="${p.deep}" ${OUTLINE}/><ellipse cx="42" cy="-37" rx="4.5" ry="8.5" transform="rotate(32 42 -37)" fill="${p.base}" ${OUTLINE}/>
       ${blossom(2, -27, 0, 0.82)}${blossom(-27, 2, -28, 0.92)}${blossom(27, 2, 28, 0.92)}${blossom(0, 22, 180, 1)}`;
   },
   sunflower(p, random, id) {
-    return `<defs>${radial(`${id}a`, 52, [[0.3, p.core], [0.7, p.deep], [1, p.base]])}${radial(`${id}b`, 50, [[0.3, p.deep], [0.62, p.base], [1, p.tip]])}${radial(`${id}c`, 22, [[0, '#2b190c'], [0.6, '#4d2e14'], [0.86, '#8a5a1e'], [1, '#3a2210']])}</defs>
-      <path fill="url(#${id}a)" d="${petalRing(17, 'pointed', 38, 8.6, random, { from: 14, offset: 10.6 })}"/>
-      <path fill="url(#${id}b)" stroke="${p.deep}" stroke-width=".5" stroke-opacity=".5" d="${petalRing(17, 'pointed', 35, 8.6, random, { from: 14 })}"/>
-      <path fill="none" stroke="${p.deep}" stroke-width=".7" stroke-opacity=".4" stroke-linecap="round" d="${petalVeins(17, 24, 42)}"/>
-      <circle r="21" fill="url(#${id}c)"/>
+    return `<path fill="${p.deep}" ${OUTLINE} d="${petalRing(17, 'pointed', 38, 8.6, random, { from: 14, offset: 10.6 })}"/>
+      <path fill="${p.base}" ${OUTLINE} d="${petalRing(17, 'pointed', 35, 8.6, random, { from: 14 })}"/>
+      <path fill="none" stroke="${p.tip}" stroke-width="1.4" stroke-linecap="round" d="${petalVeins(17, 26, 38)}"/>
+      <circle r="21" fill="#8a5a2b" stroke="${INK}" stroke-width="2.2"/><circle r="14" fill="#6b4220"/>
       <path fill="none" stroke="#e0a93a" stroke-width="1.5" stroke-linecap="round" d="${seedDots(46, 19)}"/>`;
   },
   rose(p, random, id) {
-    const ring = (key, radius, stops) => radial(`${id}${key}`, radius, stops);
-    const layer = (key, petals) => `<g fill="url(#${id}${key})" stroke="${p.core}" stroke-width=".6" stroke-opacity=".55">${separatePetals(petals)}</g>`;
-    return `<defs>${ring('a', 50, [[0.4, p.core], [0.78, p.base], [1, p.tip]])}${ring('b', 40, [[0.35, p.core], [0.78, p.base], [1, p.tip]])}${ring('c', 29, [[0.3, p.core], [0.75, p.base], [1, p.tip]])}${ring('d', 19, [[0.2, p.core], [1, p.base]])}</defs>
-      ${layer('a', petalRing(7, 'round', 50, 24, random))}
-      ${layer('b', petalRing(6, 'round', 40, 20, random, { offset: 26 }))}
-      ${layer('c', petalRing(5, 'round', 29, 15, random, { offset: 10 }))}
-      ${layer('d', petalRing(4, 'round', 19, 10, random, { offset: 50 }))}
-      <path d="M-7,2 C-9,-6 4,-10 7,-3 C9,4 1,8 -3,4 C-6,1 -2,-3 1,-2" fill="none" stroke="${p.tip}" stroke-opacity=".75" stroke-width="1.5" stroke-linecap="round"/>`;
+    const layer = (fill, petals) => `<g fill="${fill}" stroke="${INK}" stroke-width="1.7" stroke-linejoin="round">${separatePetals(petals)}</g>`;
+    return `${layer(p.deep, petalRing(7, 'round', 50, 24, random))}
+      ${layer(p.base, petalRing(6, 'round', 40, 20, random, { offset: 26 }))}
+      ${layer(p.tip, petalRing(5, 'round', 29, 15, random, { offset: 10 }))}
+      ${layer(p.base, petalRing(4, 'round', 19, 10, random, { offset: 50 }))}
+      <path d="M-7,2 C-9,-6 4,-10 7,-3 C9,4 1,8 -3,4 C-6,1 -2,-3 1,-2" fill="none" stroke="${INK}" stroke-opacity=".7" stroke-width="1.6" stroke-linecap="round"/>`;
   },
   tulip(p, random, id) {
-    const up = (key, stops) => `<linearGradient id="${id}${key}" gradientUnits="userSpaceOnUse" x1="0" y1="-56" x2="0" y2="36">${stops.map(([at, color]) => `<stop offset="${at}" stop-color="${color}"/>`).join('')}</linearGradient>`;
-    return `<defs>${up('a', [[0, p.base], [1, p.core]])}${up('b', [[0, p.tip], [0.5, p.base], [1, p.deep]])}${up('c', [[0, p.tip], [0.55, p.base], [1, p.core]])}</defs>
-      <path fill="url(#${id}a)" d="M-29,-8 C-33,-30 -28,-46 -19,-56 C-13,-44 -6,-40 0,-57 C6,-40 13,-44 19,-56 C28,-46 33,-30 29,-8 C27,20 14,34 0,34 C-14,34 -27,20 -29,-8 Z"/>
-      <path fill="url(#${id}b)" stroke="${p.core}" stroke-width=".6" stroke-opacity=".5" d="M2,34 C-22,35 -37,18 -37,-8 C-37,-27 -33,-42 -27,-51 C-14,-38 -3,-14 2,34 Z"/>
-      <path fill="url(#${id}b)" stroke="${p.core}" stroke-width=".6" stroke-opacity=".5" d="M-2,34 C22,35 37,18 37,-8 C37,-27 33,-42 27,-51 C14,-38 3,-14 -2,34 Z"/>
-      <path fill="url(#${id}c)" stroke="${p.core}" stroke-width=".6" stroke-opacity=".5" d="M0,-43 C-15,-26 -20,-4 -15,14 C-11,28 -4,33 0,35 C4,33 11,28 15,14 C20,-4 15,-26 0,-43 Z"/>
+    return `<path fill="${p.deep}" ${OUTLINE} d="M-29,-8 C-33,-30 -28,-46 -19,-56 C-13,-44 -6,-40 0,-57 C6,-40 13,-44 19,-56 C28,-46 33,-30 29,-8 C27,20 14,34 0,34 C-14,34 -27,20 -29,-8 Z"/>
+      <path fill="${p.base}" ${OUTLINE} d="M2,34 C-22,35 -37,18 -37,-8 C-37,-27 -33,-42 -27,-51 C-14,-38 -3,-14 2,34 Z"/>
+      <path fill="${p.base}" ${OUTLINE} d="M-2,34 C22,35 37,18 37,-8 C37,-27 33,-42 27,-51 C14,-38 3,-14 -2,34 Z"/>
+      <path fill="${p.tip}" ${OUTLINE} d="M0,-43 C-15,-26 -20,-4 -15,14 C-11,28 -4,33 0,35 C4,33 11,28 15,14 C20,-4 15,-26 0,-43 Z"/>
       <path fill="none" stroke="${p.tip}" stroke-opacity=".6" stroke-width="1" stroke-linecap="round" d="M-2,28 C-5,10 -5,-10 -1,-30 M-24,14 C-29,0 -29,-16 -26,-34 M24,14 C29,0 29,-16 26,-34"/>`;
   },
   daisy(p, random, id) {
-    return `<defs>${radial(`${id}a`, 50, [[0.2, p.core], [0.6, p.deep], [1, p.base]])}${radial(`${id}b`, 48, [[0.2, p.deep], [0.5, p.base], [1, p.tip]])}${radial(`${id}c`, 15, [[0, p.heart[0]], [0.65, p.heart[1]], [1, p.heart[2]]])}</defs>
-      <path fill="url(#${id}a)" d="${petalRing(13, 'round', 42, 7.4, random, { from: 8, offset: 13.8 })}"/>
-      <path fill="url(#${id}b)" stroke="${p.deep}" stroke-width=".5" stroke-opacity=".45" d="${petalRing(13, 'round', 40, 7.4, random, { from: 8 })}"/>
-      <circle r="15" fill="url(#${id}c)"/>
+    return `<path fill="${p.deep}" ${OUTLINE} d="${petalRing(13, 'round', 42, 7.4, random, { from: 8, offset: 13.8 })}"/>
+      <path fill="${p.base}" ${OUTLINE} d="${petalRing(13, 'round', 40, 7.4, random, { from: 8 })}"/>
+      <circle r="15" fill="${p.heart[1]}" stroke="${INK}" stroke-width="2.2"/><circle cx="-4" cy="-5" r="4" fill="${p.heart[0]}"/>
       <path fill="none" stroke="${p.pollen}" stroke-width="1.2" stroke-linecap="round" d="${seedDots(26, 13)}"/>`;
   },
   wildflower(p, random, id) {
-    return `<defs>${radial(`${id}a`, 52, [[0.12, p.core], [0.5, p.deep], [1, p.base]])}${radial(`${id}b`, 52, [[0.12, p.core], [0.6, p.base], [1, p.tip]])}${radial(`${id}c`, 11, [[0, p.heart[0]], [0.7, p.heart[1]], [1, p.heart[2]]])}</defs>
-      <path fill="url(#${id}a)" stroke="${p.core}" stroke-width=".5" stroke-opacity=".5" d="${petalRing(8, 'notched', 50, 16, random, { from: 2, start: 1, every: 2 })}"/>
-      <path fill="url(#${id}b)" stroke="${p.core}" stroke-width=".5" stroke-opacity=".5" d="${petalRing(8, 'notched', 50, 16, random, { from: 2, every: 2 })}"/>
-      <path fill="none" stroke="${p.core}" stroke-width=".7" stroke-opacity=".35" stroke-linecap="round" d="${petalVeins(24, 13, 36, 7.5)}"/>
-      <circle r="11" fill="url(#${id}c)"/>
+    return `<path fill="${p.deep}" ${OUTLINE} d="${petalRing(8, 'notched', 50, 16, random, { from: 2, start: 1, every: 2 })}"/>
+      <path fill="${p.base}" ${OUTLINE} d="${petalRing(8, 'notched', 50, 16, random, { from: 2, every: 2 })}"/>
+      <path fill="none" stroke="${p.tip}" stroke-width="1.3" stroke-linecap="round" d="${petalVeins(8, 16, 34, 0)}"/>
+      <circle r="11" fill="${p.heart[1]}" stroke="${INK}" stroke-width="2.2"/>
       <path fill="none" stroke="${p.pollen}" stroke-width="1.4" stroke-linecap="round" d="${seedDots(16, 9.5)}"/>`;
   }
 };
@@ -194,42 +190,42 @@ const BLOSSOMS = {
 const BLOSSOM_Y = { astromelia: 62, sunflower: 58, rose: 56, tulip: 62, daisy: 56, wildflower: 56 };
 
 function leaf(x, y, rotation, length, width) {
-  return `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(rotation)})"><path d="M0,0C${f1(length * 0.25)},${f1(-width)} ${f1(length * 0.7)},${f1(-width)} ${f1(length)},0C${f1(length * 0.7)},${f1(width * 0.6)} ${f1(length * 0.25)},${f1(width * 0.6)} 0,0Z"/><path d="M2,0H${f1(length * 0.85)}" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width=".8"/></g>`;
+  return `<g transform="translate(${f1(x)},${f1(y)}) rotate(${f1(rotation)})"><path d="M0,0C${f1(length * 0.25)},${f1(-width)} ${f1(length * 0.7)},${f1(-width)} ${f1(length)},0C${f1(length * 0.7)},${f1(width * 0.6)} ${f1(length * 0.25)},${f1(width * 0.6)} 0,0Z"/><path d="M3,0H${f1(length * 0.8)}" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.4" stroke-linecap="round"/></g>`;
 }
 
-// Cada flor vive en su maceta de urna, pintada a mano. La semilla elige el barro, el adorno y de qué lado cae la hiedra.
+// Cada flor vive en su macetita redonda, pintada a mano. La semilla elige el color, el adorno y de qué lado cae la hiedra.
 function flowerPot(id, random, palette) {
   const clay = [
-    ['#f2ad80', '#d0763f', '#8e4323', '#fff3d6'],
-    ['#f2ad80', '#d0763f', '#8e4323', '#fff3d6'],
-    ['#f5b79a', '#d97f63', '#98493a', '#fff3d6'],
-    ['#fff8e8', '#efdfc0', '#b39a72', '#c9703f']
-  ][Math.floor(random() * 4)];
-  const paint = clay[3];
-  const sprigs = `<path fill="none" stroke="${paint}" stroke-width="1.5" stroke-linecap="round" d="M50,205q-6,3 -13,-1M70,205q6,3 13,-1M44,206q0,-4 -3,-5M76,206q0,-4 3,-5"/><path fill="none" stroke="${paint}" stroke-width="3" stroke-linecap="round" d="M36,203h.01M84,203h.01"/>`;
+    ['#ffc3a0', '#f6a173', '#fffaf0'],
+    ['#ffc3a0', '#f6a173', '#fffaf0'],
+    ['#ffd0da', '#ff9fb1', '#fffaf0'],
+    ['#fff6e2', '#fbe0b0', '#f6a173'],
+    ['#d6f5e4', '#9edfc0', '#fffaf0'],
+    ['#eadcff', '#c9a2f0', '#fffaf0'],
+    ['#d8f1ff', '#a8e0f7', '#fffaf0']
+  ][Math.floor(random() * 7)];
+  const paint = clay[2];
   const adorn = [
-    `${sprigs}<path fill="${paint}" d="M60,199c-3,-4 -9,-2 -7,3.5l7,7l7,-7c2,-5.5 -4,-7.5 -7,-3.5Z"/>`,
-    `${sprigs}<path fill="none" stroke="${paint}" stroke-width="5" stroke-linecap="round" d="M60,199.5h.01M64.3,202.6h.01M62.7,207.6h.01M57.3,207.6h.01M55.7,202.6h.01"/><circle cx="60" cy="204.3" r="2.2" fill="#f4c542"/>`,
-    `<path fill="none" stroke="${paint}" stroke-width="1.7" stroke-linecap="round" d="M34,199q4.3,7 8.7,0q4.3,7 8.7,0q4.3,7 8.6,0q4.3,7 8.6,0q4.3,7 8.7,0q4.3,7 8.7,0"/><path fill="none" stroke="${paint}" stroke-width="3" stroke-linecap="round" d="M38.3,207.5h.01M47,208.5h.01M55.7,209h.01M64.3,209h.01M73,208.5h.01M81.7,207.5h.01"/>`
+    `<path fill="${paint}" stroke="${INK}" stroke-width="1.4" d="M60,196c-3,-4.5 -10,-2.5 -8,3.5l8,8l8,-8c2,-6 -5,-8 -8,-3.5Z"/>`,
+    `<path fill="none" stroke="${paint}" stroke-width="5.4" stroke-linecap="round" d="M60,195.5h.01M64.6,198.9h.01M62.9,204.3h.01M57.1,204.3h.01M55.4,198.9h.01"/><circle cx="60" cy="200.6" r="2.4" fill="#ffd36b"/>`,
+    `<path fill="none" stroke="${paint}" stroke-width="5" stroke-linecap="round" d="M42,199h.01M51,201h.01M60,202h.01M69,201h.01M78,199h.01"/>`
   ][Math.floor(random() * 3)];
   const side = random() > 0.5 ? 1 : -1;
   const at = (dx) => 60 + side * dx;
-  const ivy = (dx, y, turn) => `<path transform="translate(${at(dx)},${y}) rotate(${side > 0 ? turn : 180 - turn})" d="M0,0c3,-4.5 8,-4.5 11,0c-3,4 -8,4 -11,0Z"/>`;
-  const tiny = (dx, y) => `<path fill="none" stroke="${palette.base}" stroke-width="3.4" stroke-linecap="round" d="M${at(dx)},${y - 3}h.01M${at(dx) + 3},${y - 1}h.01M${at(dx) + 2},${y + 2.5}h.01M${at(dx) - 2},${y + 2.5}h.01M${at(dx) - 3},${y - 1}h.01"/><circle cx="${at(dx)}" cy="${y}" r="1.4" fill="#f4c542"/>`;
+  const ivy = (dx, y, turn) => `<path transform="translate(${at(dx)},${y}) rotate(${side > 0 ? turn : 180 - turn})" d="M0,0c3,-5 9,-5 12,0c-3,4.5 -9,4.5 -12,0Z"/>`;
+  const tiny = (dx, y) => `<circle cx="${at(dx)}" cy="${y}" r="4.2" fill="${palette.tip}" stroke="${INK}" stroke-width="1.4"/><circle cx="${at(dx)}" cy="${y}" r="1.6" fill="#ffd36b"/>`;
   return {
-    back: `<ellipse cx="60" cy="217" rx="34" ry="6" fill="#0b2415" opacity=".38"/><ellipse cx="60" cy="175" rx="27" ry="5.5" fill="#3a2415"/>`,
-    front: `<linearGradient id="${id}p"><stop offset="0" stop-color="${clay[0]}"/><stop offset=".45" stop-color="${clay[1]}"/><stop offset="1" stop-color="${clay[2]}"/></linearGradient>
-      <path fill="${clay[2]}" d="M43,214H77L80,220H40Z"/>
-      <path fill="url(#${id}p)" d="M36,186C24,194 25,209 43,216H77C95,209 96,194 84,186Z"/>
-      <path fill="${clay[2]}" opacity=".3" d="M31,207C37,212 83,212 89,207C87,211 83,214 77,216H43C37,214 33,211 31,207Z"/>
-      <path fill="#fff" opacity=".24" d="M36,194C32,199 33,205 37,208C36,203 37,198 40,193Z"/>
+    back: `<ellipse cx="60" cy="217" rx="33" ry="5.5" fill="#1f5a2a" opacity=".22"/><ellipse cx="60" cy="176" rx="27" ry="5.5" fill="#7a4a2e"/>`,
+    front: `<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round">
+      <path fill="${clay[1]}" d="M33,182C28,200 32,214 46,217H74C88,214 92,200 87,182Z"/>
+      <path fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" d="M38,192C36,200 37,206 41,210"/>
       ${adorn}
-      <path fill="${clay[2]}" d="M35,184H85L84,190H36Z"/>
-      <rect x="29" y="173" width="62" height="12" rx="5" fill="url(#${id}p)"/>
-      <path fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.5" stroke-linecap="round" d="M34,176.5H72"/>
-      <g fill="#3f8345">${ivy(8, 175, -10)}${ivy(21, 177, 35)}${ivy(26, 186, 75)}${ivy(28, 195, 100)}</g>
-      ${tiny(13, 176)}${tiny(30, 186)}
-      <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2" stroke-linecap="round" d="M38,220q-4,-8 -9,-11M43,220q-2,-8 -1,-13M77,220q2,-8 1,-12M82,220q4,-7 9,-10"/>`
+      <rect x="27" y="171" width="66" height="15" rx="7.5" fill="${clay[0]}"/>
+      <path fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2.4" stroke-linecap="round" d="M34,176H62"/>
+      <g fill="#7cc865" stroke-width="1.4">${ivy(10, 174, -10)}${ivy(23, 178, 40)}${ivy(28, 189, 80)}${ivy(30, 200, 104)}</g>
+      ${tiny(15, 176)}${tiny(31, 190)}
+    </g>
+      <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2.2" stroke-linecap="round" d="M38,219q-4,-8 -9,-11M43,219q-2,-8 -1,-13M77,219q2,-8 1,-12M82,219q4,-7 9,-10"/>`
   };
 }
 
@@ -261,17 +257,18 @@ function createFlowerSVG(type, color = '#e3ae2b', { seed = 1, sprouting = false,
     const budX = stemX(152) + side * 30;
     leaves = leaf(stemX(166), 166, leafAngle(-side, 30), 30, 6.5);
     extra = `<path class="flower-stem" d="M${f1(stemX(152))},152 Q${f1(stemX(152) + side * 22)},148 ${f1(budX)},128" fill="none" stroke="${STEM}" stroke-width="2.2" stroke-linecap="round"/>
-      <ellipse cx="${f1(budX)}" cy="120" rx="6.5" ry="10" fill="${palette.base}"/>`;
+      <ellipse cx="${f1(budX)}" cy="120" rx="6.5" ry="10" fill="${palette.base}" ${OUTLINE}/>`;
   } else {
     leaves = leaf(stemX(160), 160, leafAngle(side, 22), 36, 10) + leaf(stemX(136), 136, leafAngle(-side, 26), 32, 9);
   }
 
-  const stem = `<path class="flower-stem" d="M60,180 Q${f1(60 + bend)},${f1((180 + top) / 2)} 60,${top}" fill="none" stroke="${STEM}" stroke-width="3.4" stroke-linecap="round"/>`;
+  const stemPath = `M60,180 Q${f1(60 + bend)},${f1((180 + top) / 2)} 60,${top}`;
+  const stem = `<path d="${stemPath}" fill="none" stroke="${INK}" stroke-width="7.2" stroke-linecap="round"/><path class="flower-stem" d="${stemPath}" fill="none" stroke="${STEM}" stroke-width="3.6" stroke-linecap="round"/>`;
   const pot = flowerPot(id, random, palette);
 
   return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">
     ${pot.back}
-    <g class="stem-container ${sprouting ? 'sprouting-stem' : ''}">${stem}<g class="flower-leaves" fill="${STEM}">${leaves}</g>${extra}</g>
+    <g class="stem-container ${sprouting ? 'sprouting-stem' : ''}">${stem}<g class="flower-leaves" fill="${STEM}" ${OUTLINE}>${leaves}</g>${extra}</g>
     ${pot.front}
     <g transform="translate(60,${top}) rotate(${tilt.toFixed(1)})">
       <g class="flower-blossom ${sprouting ? 'sprouting-head' : ''}">${blossom}</g>
@@ -294,13 +291,13 @@ function placeholderPhoto(flower, kind) {
   const { type, color, id } = flower;
   if (kind === 'real') {
     return svgDataURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
-      <rect width="400" height="500" fill="#efeadb"/>
+      <rect width="400" height="500" fill="#fff0d4"/>
       ${innerSVG(type, shade(color, -0.08), id + 'a', 60, 120, 165)}
       ${innerSVG(type, shade(color, 0.1), id + 'c', 176, 124, 165)}
       ${innerSVG(type, color, id + 'b', 112, 76, 180)}</svg>`, 400, 500);
   }
   return svgDataURI(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
-    <rect width="400" height="500" fill="#e8e4d3"/><rect y="330" width="400" height="170" fill="#7a9166"/>
+    <rect width="400" height="500" fill="#cfeeff"/><rect y="330" width="400" height="170" fill="#a6e08a"/>
     ${innerSVG(type, color, id + 'd', 66, 130, 160)}
     ${innerSVG(type, shade(color, 0.12), id + 'e', 174, 156, 150)}
     </svg>`, 400, 500);
@@ -776,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ================= 1. CICLO DÍA / TARDE / NOCHE =================
   const celestialOrbit = $('celestialOrbit');
-  const timeAngles = { day: 0, sunset: 70, night: 180 };
+  const timeAngles = { day: 0, sunset: 55, night: 180 };
   const skyThemeColor = { day: '#6db5f5', sunset: '#4c2a85', night: '#070b1e' };
   const TIME_BUTTON = { day: ['sun', 'Día'], sunset: ['sunset', 'Tarde'], night: ['moon', 'Noche'], auto: ['timer', 'Auto'] };
   const CYCLE_SECONDS = 15;
@@ -784,16 +781,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let isAutoCycling = false;
   let autoCycleInterval = null;
 
-  function setTimeMode(mode) {
+  function setTimeMode(mode, { nearest = false } = {}) {
     state.time = mode;
     document.body.classList.remove('time-day', 'time-sunset', 'time-night');
     document.body.classList.add(`time-${mode}`);
 
-    // El sol siempre avanza hacia adelante, nunca retrocede por el cielo.
+    // El sol siempre avanza hacia adelante, nunca retrocede por el cielo; si lo soltaste con el dedo, se acomoda donde quedó.
     let target = timeAngles[mode];
-    while (target < orbitAngle) target += 360;
+    if (nearest) target += Math.round((orbitAngle - target) / 360) * 360;
+    else while (target < orbitAngle) target += 360;
     orbitAngle = target;
     celestialOrbit.style.setProperty('--orbit-angle', `${orbitAngle}deg`);
+    Pets.refresh();
 
     paintTimeButton();
     document.querySelector('meta[name="theme-color"]').content = skyThemeColor[mode];
@@ -830,6 +829,58 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     setTimeMode(state.time === 'day' ? 'sunset' : 'night');
+  });
+
+  // El sol y la luna se agarran: arrastrarlos por el cielo cambia la hora, y un toque los hace rebotar.
+  function modeForAngle(angle) {
+    const turn = ((angle % 360) + 360) % 360;
+    if (turn < 35 || turn >= 325) return 'day';
+    if (turn < 125) return 'sunset';
+    return 'night';
+  }
+
+  [$('celestialSun'), $('celestialMoon')].forEach((body) => {
+    let drag = null;
+    body.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      drag = { x: event.clientX, angle: orbitAngle, moved: false };
+      try { body.setPointerCapture(event.pointerId); } catch (e) {}
+      celestialOrbit.classList.add('is-dragging');
+    });
+    body.addEventListener('pointermove', (event) => {
+      if (!drag) return;
+      const dx = event.clientX - drag.x;
+      if (Math.abs(dx) > 6) drag.moved = true;
+      if (!drag.moved) return;
+      orbitAngle = drag.angle + (dx / (window.innerWidth * 0.34)) * 70;
+      celestialOrbit.style.setProperty('--orbit-angle', `${orbitAngle}deg`);
+      const mode = modeForAngle(orbitAngle);
+      if (mode !== state.time) {
+        stopAutoCycle();
+        state.time = mode;
+        document.body.classList.remove('time-day', 'time-sunset', 'time-night');
+        document.body.classList.add(`time-${mode}`);
+        paintTimeButton();
+      }
+    });
+    const release = () => {
+      if (!drag) return;
+      const { moved } = drag;
+      drag = null;
+      celestialOrbit.classList.remove('is-dragging');
+      body.classList.remove('is-squish');
+      void body.offsetWidth;
+      body.classList.add('is-squish');
+      Sound.tinkle();
+      if (moved) {
+        setTimeMode(modeForAngle(orbitAngle), { nearest: true });
+      } else {
+        stopAutoCycle();
+        setTimeMode({ day: 'sunset', sunset: 'night', night: 'day' }[state.time]);
+      }
+    };
+    body.addEventListener('pointerup', release);
+    body.addEventListener('pointercancel', release);
   });
 
   function timeFromClock() {
@@ -1130,7 +1181,35 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // El caminito y sus adornos se dibujan una vez, como un fondo que se repite.
+  // El caminito, sus adornos y el pasto se dibujan una vez, como fondos.
+  // Cada tramo del caminito trae adornos distintos y las capas del pasto miden distinto, así el piso casi no se repite.
+  const TRAIL_SPAN = 3;
+
+  function svgTile(width, height, body, defs = '') {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${defs}${body}</svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  }
+
+  const circlePath = (x, y, r) => `M${f1(x - r)},${f1(y)}a${f1(r)},${f1(r)} 0 1,0 ${f1(2 * r)},0a${f1(r)},${f1(r)} 0 1,0 ${f1(-2 * r)},0`;
+
+  const Decor = {
+    lantern: (x, y) => `<circle cx="${f1(x)}" cy="${f1(y - 28)}" r="22" fill="url(#g)"/><g stroke="${INK}" stroke-width="2" stroke-linejoin="round"><rect x="${f1(x - 2.5)}" y="${f1(y - 22)}" width="5" height="22" rx="2" fill="#8a5a3c"/><rect x="${f1(x - 7)}" y="${f1(y - 37)}" width="14" height="16" rx="4" fill="#ffe08a"/><path fill="#8a5a3c" d="M${f1(x - 9)},${f1(y - 36)}h18l-4,-6h-10Z"/></g>`,
+    mushrooms: (x, y, s) => [[0, 0, s], [15, 4, s * 0.62]].map(([dx, dy, k]) => `<g transform="translate(${f1(x + dx)},${f1(y + dy)}) scale(${f1(k)})" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"><path fill="#fff6e6" d="M-4,0C-3,-6 -3,-10 -3,-12H3C3,-10 3,-6 4,0Z"/><path fill="#ff6f61" d="M-13,-10C-12,-24 12,-24 13,-10C6,-8 -6,-8 -13,-10Z"/><circle cx="-5" cy="-15" r="2" fill="#fff6e6" stroke="none"/><circle cx="3" cy="-18" r="2.2" fill="#fff6e6" stroke="none"/></g>`).join(''),
+    bush: (x, y, s, random) => {
+      const dots = [['#ff8fc0', -8, -12], ['#ffd36b', 3, -18], ['#fff6e6', 10, -9]].map(([c, dx, dy]) => `<circle cx="${f1(x + dx * s)}" cy="${f1(y + dy * s)}" r="${f1(3.4 * s)}" fill="${c}"/>`).join('');
+      const tone = random() > 0.5 ? '#79c463' : '#8fd37a';
+      return `<g stroke="${INK}" stroke-width="2" stroke-linejoin="round"><path fill="${tone}" d="M${f1(x - 20 * s)},${f1(y)}C${f1(x - 26 * s)},${f1(y - 14 * s)} ${f1(x - 14 * s)},${f1(y - 24 * s)} ${f1(x - 6 * s)},${f1(y - 20 * s)}C${f1(x - 2 * s)},${f1(y - 30 * s)} ${f1(x + 16 * s)},${f1(y - 28 * s)} ${f1(x + 16 * s)},${f1(y - 16 * s)}C${f1(x + 26 * s)},${f1(y - 14 * s)} ${f1(x + 26 * s)},${f1(y)} ${f1(x + 18 * s)},${f1(y)}Z"/>${dots}</g>`;
+    },
+    rock: (x, y, s) => `<g stroke="${INK}" stroke-width="2" stroke-linejoin="round"><path fill="#e9dcc6" d="M${f1(x - 13 * s)},${f1(y)}C${f1(x - 15 * s)},${f1(y - 10 * s)} ${f1(x - 6 * s)},${f1(y - 15 * s)} ${f1(x + 2 * s)},${f1(y - 13 * s)}C${f1(x + 12 * s)},${f1(y - 12 * s)} ${f1(x + 16 * s)},${f1(y - 4 * s)} ${f1(x + 13 * s)},${f1(y)}Z"/><path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" d="M${f1(x - 7 * s)},${f1(y - 8 * s)}q4,-3 8,-2"/></g>`,
+    snail: (x, y) => `<g stroke="${INK}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="#fff1c4" d="M${f1(x - 14)},${f1(y)}H${f1(x + 12)}C${f1(x + 16)},${f1(y)} ${f1(x + 16)},${f1(y - 8)} ${f1(x + 12)},${f1(y - 8)}L${f1(x + 14)},${f1(y - 14)}"/><circle cx="${f1(x - 2)}" cy="${f1(y - 8)}" r="8" fill="#ff9fb1"/><path fill="none" d="M${f1(x - 2)},${f1(y - 8)}m-3,0a3,3 0 1,1 3,3"/></g>`,
+    sprout: (x, y) => `<g stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"><path fill="none" d="M${f1(x)},${f1(y)}v-9"/><path fill="#8fd37a" d="M${f1(x)},${f1(y - 8)}c-3,-6 -10,-6 -11,-2c3,4 8,4 11,2ZM${f1(x)},${f1(y - 9)}c3,-6 10,-7 11,-3c-3,4 -8,5 -11,3Z"/></g>`,
+    clump: (x, y, s, random) => {
+      const color = ['#ff8fc0', '#ffd36b', '#c9a2f0', '#a8e0f7'][Math.floor(random() * 4)];
+      return `<g stroke="${INK}" stroke-width="1.6"><path fill="none" stroke="#3f8a45" stroke-width="2" stroke-linecap="round" d="M${f1(x)},${f1(y)}v-12M${f1(x - 6)},${f1(y)}q-1,-7 -3,-10M${f1(x + 6)},${f1(y)}q1,-7 3,-10"/>${[[0, -14], [-9, -11], [9, -11]].map(([dx, dy]) => `<circle cx="${f1(x + dx * s)}" cy="${f1(y + dy * s)}" r="${f1(4 * s)}" fill="${color}"/>`).join('')}</g>`;
+    },
+    sparkle: (x, y, r) => `<path fill="#fff4b8" d="M${f1(x)},${f1(y - r)}q${f1(r * 0.14)},${f1(r * 0.86)} ${f1(r)},${f1(r)}q${f1(-r * 0.86)},${f1(r * 0.14)} ${f1(-r)},${f1(r)}q${f1(-r * 0.14)},${f1(-r * 0.86)} ${f1(-r)},${f1(-r)}q${f1(r * 0.86)},${f1(-r * 0.14)} ${f1(r)},${f1(-r)}Z"/>`
+  };
+
   function drawGardenTrail() {
     const width = flowersContainer.clientWidth;
     const probe = document.createElement('i');
@@ -1141,88 +1220,104 @@ document.addEventListener('DOMContentLoaded', () => {
     trailWidth = width;
     const amplitude = trailAmplitude(gardenColumns) / 100;
     const centerAt = (y) => width * (0.5 + amplitude * Math.sin((2 * Math.PI * y) / period));
+    const height = period * TRAIL_SPAN;
     const random = seededRandom(7);
 
     let stones = '';
-    const count = Math.round(period / 38);
+    const count = Math.round(height / 38);
     for (let i = 0; i < count; i++) {
-      const y = (i + 0.5) * (period / count);
-      stones += `<ellipse cx="${f1(centerAt(y) + (i % 2 ? 7 : -7))}" cy="${f1(y)}" rx="${f1(13 + random() * 6)}" ry="${f1(5.5 + random() * 2)}"/>`;
+      const y = (i + 0.5) * (height / count);
+      stones += `<ellipse cx="${f1(centerAt(y) + (i % 2 ? 7 : -7))}" cy="${f1(y)}" rx="${f1(13 + random() * 6)}" ry="${f1(6 + random() * 2)}"/>`;
     }
 
-    const lantern = (x, y) => `<circle cx="${f1(x)}" cy="${f1(y - 25)}" r="20" fill="url(#g)"/><path d="M${f1(x)},${f1(y)}v-20" stroke="#39423c" stroke-width="2.2"/><rect x="${f1(x - 5)}" y="${f1(y - 31)}" width="10" height="12" rx="2.5" fill="#39423c"/><rect x="${f1(x - 3)}" y="${f1(y - 29)}" width="6" height="8" fill="#ffe08a"/>`;
-    const mushroom = (x, y, s) => `<g transform="translate(${f1(x)},${f1(y)}) scale(${s})"><path fill="#fbf1dc" d="M-4,0C-3,-6 -3,-10 -3,-12H3C3,-10 3,-6 4,0Z"/><path fill="#e0463c" d="M-13,-10C-12,-23 12,-23 13,-10C6,-8 -6,-8 -13,-10Z"/><circle cx="-6" cy="-14" r="2" fill="#fff6e4"/><circle cx="1" cy="-17" r="2.2" fill="#fff6e4"/><circle cx="6" cy="-13" r="1.7" fill="#fff6e4"/></g>`;
-    const fern = (x, y) => `<path fill="none" stroke="#2f7a45" stroke-width="2.4" stroke-linecap="round" d="M${f1(x)},${f1(y)}q-3,-12 -12,-16M${f1(x)},${f1(y)}q0,-14 -2,-22M${f1(x)},${f1(y)}q3,-12 10,-18M${f1(x)},${f1(y)}q5,-8 14,-10"/>`;
-    const sparkle = (x, y, r) => `<path fill="#fff4b8" d="M${f1(x)},${f1(y - r)}q${f1(r * 0.14)},${f1(r * 0.86)} ${f1(r)},${f1(r)}q${f1(-r * 0.86)},${f1(r * 0.14)} ${f1(-r)},${f1(r)}q${f1(-r * 0.14)},${f1(-r * 0.86)} ${f1(-r)},${f1(-r)}q${f1(r * 0.86)},${f1(-r * 0.14)} ${f1(r)},${f1(-r)}Z"/>`;
-
+    // En cada tramo los adornos caen en otro lugar y son otros
+    const kinds = ['mushrooms', 'bush', 'rock', 'snail', 'sprout', 'clump', 'clump', 'bush'];
     let decor = '';
-    [0.16, 0.66].forEach((at, i) => { decor += lantern(centerAt(period * at) + (i ? -30 : 30), period * at); });
-    [[0.06, 0.1], [0.94, 0.3], [0.5, 0.42], [0.05, 0.56], [0.95, 0.8], [0.48, 0.92]].forEach(([x, at], i) => {
-      decor += mushroom(width * x, period * at, i % 2 ? 0.9 : 0.7);
-      decor += mushroom(width * x + 15, period * at + 4, 0.5);
-    });
-    [[0.03, 0.34], [0.97, 0.52], [0.02, 0.8], [0.98, 0.06]].forEach(([x, at]) => { decor += fern(width * x, period * at); });
-    for (let i = 0; i < 9; i++) decor += sparkle(random() * width, random() * period, 2.5 + random() * 3);
+    for (let k = 0; k < TRAIL_SPAN; k++) {
+      const top = k * period;
+      [0.1 + random() * 0.25, 0.55 + random() * 0.3].forEach((at, i) => {
+        const y = top + period * at;
+        decor += Decor.lantern(centerAt(y) + (i === k % 2 ? 34 : -34), y);
+      });
+      const items = 6 + Math.floor(random() * 3);
+      for (let i = 0; i < items; i++) {
+        const y = top + random() * period;
+        const edge = random() < 0.65;
+        const x = edge
+          ? (random() < 0.5 ? width * (0.02 + random() * 0.1) : width * (0.88 + random() * 0.1))
+          : centerAt(y) + (random() < 0.5 ? -1 : 1) * (36 + random() * 18);
+        decor += Decor[kinds[Math.floor(random() * kinds.length)]](x, y, 0.7 + random() * 0.5, random);
+      }
+      for (let i = 0; i < 4; i++) decor += Decor.sparkle(random() * width, top + random() * period, 2.5 + random() * 3);
+    }
 
-    const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${period}" viewBox="0 0 ${width} ${period}"><radialGradient id="g"><stop offset="0" stop-color="#ffdf8a" stop-opacity=".55"/><stop offset="1" stop-color="#ffdf8a" stop-opacity="0"/></radialGradient><g fill="#fff4dc" fill-opacity=".42">${stones}</g>${decor}</svg>`;
-    flowersContainer.style.setProperty('--trail', `url("data:image/svg+xml,${encodeURIComponent(tile)}")`);
-    flowersContainer.style.setProperty('--trail-size', `${width}px ${period}px`);
+    const defs = '<radialGradient id="g"><stop offset="0" stop-color="#ffdf8a" stop-opacity=".55"/><stop offset="1" stop-color="#ffdf8a" stop-opacity="0"/></radialGradient>';
+    flowersContainer.style.setProperty('--trail', svgTile(width, height, `<g fill="#fff4dc" stroke="${INK}" stroke-width="2" stroke-opacity=".4">${stones}</g>${decor}`, defs));
+    flowersContainer.style.setProperty('--trail-size', `${width}px ${height}px`);
     drawGrass(width, period, centerAt);
   }
 
-  // El pasto: claros de sol, matitas, tréboles y florecitas silvestres que esquivan el caminito.
+  // El pasto en tres capas de alto distinto: claros de sol, matitas con tréboles y florecitas que esquivan el caminito.
   function drawGrass(width, period, centerAt) {
     const random = seededRandom(11);
-    const area = width * period;
+
+    const patchHeight = Math.round(period * 1.61);
     let patches = '';
-    for (let i = 0; i < Math.round(area / 30000); i++) {
-      patches += `<ellipse cx="${f1(random() * width)}" cy="${f1(random() * period)}" rx="${f1(50 + random() * 90)}" ry="${f1(22 + random() * 34)}" fill="url(#${i % 3 ? 'l' : 'd'})"/>`;
+    for (let i = 0; i < Math.round((width * patchHeight) / 26000); i++) {
+      const light = i % 3 !== 0;
+      patches += `<ellipse cx="${f1(random() * width)}" cy="${f1(random() * patchHeight)}" rx="${f1(40 + random() * 80)}" ry="${f1(18 + random() * 26)}" fill="${light ? '#ffffff' : '#2f6b3a'}" fill-opacity="${light ? '.1' : '.07'}"/>`;
     }
 
+    const tuftHeight = Math.round(period * 1.37);
     let dark = '';
     let light = '';
-    for (let i = 0; i < Math.round(area / 1500); i++) {
+    let clovers = '';
+    for (let i = 0; i < Math.round((width * tuftHeight) / 1700); i++) {
       const x = random() * width;
-      const y = random() * period;
-      const s = 0.7 + random() * 0.7;
-      const blades = `M${f1(x)},${f1(y)}q${f1(-2 * s)},${f1(-6 * s)} ${f1(-5 * s)},${f1(-9 * s)}M${f1(x)},${f1(y)}q0,${f1(-7 * s)} ${f1(s)},${f1(-11 * s)}M${f1(x)},${f1(y)}q${f1(2 * s)},${f1(-5 * s)} ${f1(6 * s)},${f1(-8 * s)}`;
-      if (random() < 0.55) dark += blades;
+      const y = random() * tuftHeight;
+      const k = 0.7 + random() * 0.7;
+      const blades = `M${f1(x)},${f1(y)}q${f1(-2 * k)},${f1(-6 * k)} ${f1(-5 * k)},${f1(-9 * k)}M${f1(x)},${f1(y)}q0,${f1(-7 * k)} ${f1(k)},${f1(-11 * k)}M${f1(x)},${f1(y)}q${f1(2 * k)},${f1(-5 * k)} ${f1(6 * k)},${f1(-8 * k)}`;
+      if (random() < 0.6) dark += blades;
       else light += blades;
     }
-
-    let clovers = '';
-    for (let i = 0; i < Math.round(area / 9000); i++) {
+    for (let i = 0; i < Math.round((width * tuftHeight) / 9000); i++) {
       const x = random() * width;
-      const y = random() * period;
-      clovers += `M${f1(x)},${f1(y - 2.6)}h.01M${f1(x - 2.4)},${f1(y + 1.4)}h.01M${f1(x + 2.4)},${f1(y + 1.4)}h.01`;
+      const y = random() * tuftHeight;
+      clovers += circlePath(x, y - 2.6, 2.7) + circlePath(x - 2.5, y + 1.4, 2.7) + circlePath(x + 2.5, y + 1.4, 2.7);
     }
+    const tufts = `<g fill="none" stroke-linecap="round" stroke-width="1.8"><path stroke="#3f8a45" stroke-opacity=".6" d="${dark}"/><path stroke="#eaffc8" stroke-opacity=".6" d="${light}"/></g><path fill="#5fae55" stroke="${INK}" stroke-opacity=".35" stroke-width=".9" d="${clovers}"/>`;
 
-    const colors = [['#ffffff', '#f4c542'], ['#ffffff', '#f4c542'], ['#9cc3ff', '#fff3b0'], ['#ffd84a', '#f29a00'], ['#ffa6cc', '#fff3b0']];
-    let blooms = '';
-    for (let i = 0; i < Math.round(area / 3200); i++) {
+    // Esta capa mide dos tramos del caminito, así las florecitas nunca lo pisan
+    const bloomHeight = period * 2;
+    const colors = ['#ffffff', '#ffffff', '#a8e0f7', '#ffd36b', '#ff9fb1', '#c9a2f0'];
+    const petals = colors.map(() => '');
+    let hearts = '';
+    for (let i = 0; i < Math.round((width * bloomHeight) / 3600); i++) {
       const x = random() * width;
-      const y = random() * period;
-      const [petal, heart] = colors[Math.floor(random() * colors.length)];
+      const y = random() * bloomHeight;
+      const tone = Math.floor(random() * colors.length);
       if (Math.abs(x - centerAt(y)) < 38) continue;
       const cluster = random() < 0.4 ? 3 : 1;
-      for (let k = 0; k < cluster; k++) {
-        const cx = x + (k ? (random() - 0.5) * 22 : 0);
-        const cy = y + (k ? (random() - 0.5) * 12 : 0);
-        const r = 2.2 + random() * 1.2;
-        let dots = '';
+      for (let c = 0; c < cluster; c++) {
+        const cx = x + (c ? (random() - 0.5) * 22 : 0);
+        const cy = y + (c ? (random() - 0.5) * 12 : 0);
+        const r = 2.4 + random() * 1.1;
+        const turn = random();
         for (let p = 0; p < 5; p++) {
-          const a = (p / 5) * 2 * Math.PI + random();
-          dots += `M${f1(cx + Math.cos(a) * r)},${f1(cy + Math.sin(a) * r * 0.8)}h.01`;
+          const a = (p / 5) * 2 * Math.PI + turn;
+          petals[tone] += circlePath(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.85, r * 0.62);
         }
-        blooms += `<path stroke="${petal}" stroke-width="${f1(r * 1.25)}" d="${dots}"/><circle cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(r * 0.55)}" fill="${heart}"/>`;
+        hearts += `M${f1(cx)},${f1(cy)}h.01`;
       }
     }
+    const blooms = petals.map((d, i) => (d ? `<path fill="${colors[i]}" d="${d}"/>` : '')).join('');
+    const bloomLayer = `<g stroke="${INK}" stroke-opacity=".55" stroke-width=".9">${blooms}</g><path fill="none" stroke="#ffb02e" stroke-width="2.6" stroke-linecap="round" d="${hearts}"/>`;
 
-    const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${period}" viewBox="0 0 ${width} ${period}"><radialGradient id="l"><stop offset="0" stop-color="#f6ffb8" stop-opacity=".2"/><stop offset="1" stop-color="#f6ffb8" stop-opacity="0"/></radialGradient><radialGradient id="d"><stop offset="0" stop-color="#0b3519" stop-opacity=".2"/><stop offset="1" stop-color="#0b3519" stop-opacity="0"/></radialGradient>${patches}<g fill="none" stroke-linecap="round" stroke-width="1.5"><path stroke="#0f4a26" stroke-opacity=".5" d="${dark}"/><path stroke="#d4f59a" stroke-opacity=".55" d="${light}"/><path stroke="#2c7a3c" stroke-opacity=".6" stroke-width="4" d="${clovers}"/></g><g fill="none" stroke-linecap="round">${blooms}</g></svg>`;
     const ground = meadow.querySelector('.garden-ground');
-    ground.style.setProperty('--grass', `url("data:image/svg+xml,${encodeURIComponent(tile)}")`);
-    ground.style.setProperty('--grass-size', `${width}px ${period}px`);
-    ground.style.setProperty('--grass-y', `${flowersContainer.offsetTop - ground.offsetTop}px`);
+    const offset = flowersContainer.offsetTop - ground.offsetTop;
+    ground.style.setProperty('--grass', `${svgTile(width, bloomHeight, bloomLayer)}, ${svgTile(width, tuftHeight, tufts)}, ${svgTile(width, patchHeight, patches)}`);
+    ground.style.setProperty('--grass-size', `${width}px ${bloomHeight}px, ${width}px ${tuftHeight}px, ${width}px ${patchHeight}px`);
+    ground.style.setProperty('--grass-pos', `0 ${offset}px, 0 0, 0 0`);
   }
 
   // Solo se mecen las flores cercanas a la pantalla
@@ -1298,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function floatHearts(layer, x, y) {
-    const colors = ['#b4552d', '#c8737a', '#e3ae2b'];
+    const colors = ['#ff6f8e', '#ff9fb1', '#ffd36b'];
     for (let i = 0; i < 4; i++) {
       const heart = document.createElement('span');
       heart.className = 'floating-heart';
@@ -1507,8 +1602,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.rotate(angle);
     ctx.translate(-width / 2, -height / 2);
     drawCover(ctx, image, pad, pad, width - pad * 2, photoHeight);
-    ctx.fillStyle = '#1f2a20';
-    ctx.font = '400 30px Newsreader, serif';
+    ctx.fillStyle = '#4a3226';
+    ctx.font = '600 30px Fredoka, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(caption, width / 2, photoHeight + pad + 50);
     ctx.restore();
@@ -1518,7 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function ensureFonts() {
     if (!document.fonts) return;
     await Promise.all([
-      '400 60px Newsreader', 'italic 400 32px Newsreader'
+      '600 58px Fredoka', '600 30px Nunito', '400 32px Nunito'
     ].map((font) => document.fonts.load(font).catch(() => {})));
   }
 
@@ -1532,16 +1627,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let letterSize = 38;
     let letterLines;
     do {
-      measure.font = `400 ${letterSize}px Newsreader, serif`;
+      measure.font = `400 ${letterSize}px Nunito, sans-serif`;
       letterLines = wrapLines(measure, flower.letter, width - margin * 2 - 72);
       if (letterLines.length * letterSize * 1.5 < 1700) break;
       letterSize -= 3;
     } while (letterSize > 24);
     const letterHeight = letterLines.length * letterSize * 1.5;
 
-    measure.font = '400 60px Newsreader, serif';
+    measure.font = '600 58px Fredoka, sans-serif';
     const titleLines = wrapLines(measure, flower.title, width - margin * 2);
-    measure.font = 'italic 400 32px Newsreader, serif';
+    measure.font = '600 30px Nunito, sans-serif';
     const meaningLines = wrapLines(measure, flower.meaning, width - margin * 2 - 20);
 
     const headHeight = 262 + titleLines.length * 68 + 60;
@@ -1554,19 +1649,19 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#faf7ef';
+    ctx.fillStyle = '#fffaf0';
     ctx.fillRect(0, 0, width, height);
 
     const art = await loadImage(svgDataURI(createFlowerSVG(flower.type, flower.color, { seed: flower.id }), 120, 220));
     ctx.drawImage(art, width / 2 - 60, 38, 120, 220);
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#1f2a20';
-    ctx.font = '400 60px Newsreader, serif';
+    ctx.fillStyle = '#4a3226';
+    ctx.font = '600 58px Fredoka, sans-serif';
     let y = 318;
     titleLines.forEach((line) => { ctx.fillText(line, width / 2, y); y += 68; });
-    ctx.fillStyle = '#55604f';
-    ctx.font = 'italic 400 32px Newsreader, serif';
+    ctx.fillStyle = '#7a5b47';
+    ctx.font = '600 30px Nunito, sans-serif';
     ctx.fillText(formatDate(flower.date), width / 2, y - 12);
     y += 44;
 
@@ -1581,24 +1676,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(margin, y, width - margin * 2, letterHeight + 140);
-    ctx.fillStyle = '#1f2a20';
+    ctx.fillStyle = '#4a3226';
     ctx.textAlign = 'left';
-    ctx.font = `400 ${letterSize}px Newsreader, serif`;
+    ctx.font = `400 ${letterSize}px Nunito, sans-serif`;
     let lineY = y + 36 + letterSize;
     letterLines.forEach((line) => { ctx.fillText(line, margin + 36, lineY); lineY += letterSize * 1.5; });
-    ctx.fillStyle = '#55604f';
+    ctx.fillStyle = '#7a5b47';
     ctx.textAlign = 'right';
-    ctx.font = '400 38px Newsreader, serif';
+    ctx.font = '600 38px Fredoka, sans-serif';
     ctx.fillText(`— ${flower.signature}`, width - margin - 36, lineY + 22);
     y += letterBlock + 30;
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#55604f';
-    ctx.font = 'italic 400 32px Newsreader, serif';
+    ctx.fillStyle = '#7a5b47';
+    ctx.font = '600 30px Nunito, sans-serif';
     meaningLines.forEach((line) => { ctx.fillText(line, width / 2, y); y += 42; });
 
-    ctx.fillStyle = '#55604f';
-    ctx.font = '400 40px Newsreader, serif';
+    ctx.fillStyle = '#7a5b47';
+    ctx.font = '600 40px Fredoka, sans-serif';
     ctx.fillText('Nuestro Jardín · flores eternas', width / 2, height - 44);
     return canvas;
   }
@@ -1825,7 +1920,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================= 11. EL HADA Y LAS MARIPOSAS =================
   const Butterflies = (() => {
     const layer = $('butterflies');
-    const COLORS = ['#f7f3e6', '#e8a93a', '#b4552d'];
+    const COLORS = ['#ffd36b', '#ff9fb1', '#a8e0f7'];
     let flock = [];
     let last = 0;
     let running = false;
@@ -1838,7 +1933,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // La primera siempre es un hada, con su luz; las demás son mariposas.
       const isFairy = index === 0;
       el.className = isFairy ? 'butterfly is-fairy' : 'butterfly';
-      const wings = (fill) => `<path class="wing wing--l" d="M19,16 C14,2 3,0 2,8 C1,15 9,17 19,16 C10,18 5,24 9,28 C13,31 18,24 19,16 Z" fill="${fill}"/><path class="wing wing--r" d="M19,16 C24,2 35,0 36,8 C37,15 29,17 19,16 C28,18 33,24 29,28 C25,31 20,24 19,16 Z" fill="${fill}"/>`;
+      const wings = (fill) => `<path class="wing wing--l" d="M19,16 C14,2 3,0 2,8 C1,15 9,17 19,16 C10,18 5,24 9,28 C13,31 18,24 19,16 Z" fill="${fill}" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/><path class="wing wing--r" d="M19,16 C24,2 35,0 36,8 C37,15 29,17 19,16 C28,18 33,24 29,28 C25,31 20,24 19,16 Z" fill="${fill}" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>`;
       el.innerHTML = isFairy
         ? `<svg viewBox="0 0 38 32"><radialGradient id="fairyGlow"><stop offset="0" stop-color="#fff2a8" stop-opacity=".85"/><stop offset="1" stop-color="#fff2a8" stop-opacity="0"/></radialGradient><circle cx="19" cy="16" r="22" fill="url(#fairyGlow)"/>${wings('#eaf8ff')}<path fill="#f76aa8" d="M19,13 C16,18 15,23 14,27 C17,29 21,29 24,27 C23,23 22,18 19,13 Z"/><circle cx="19" cy="10" r="3.8" fill="#f8d7bb"/><path fill="#a0522d" d="M15,10 C15,4 23,4 23,10 C21,7 17,7 15,10 Z"/><path fill="#fff4b8" d="M28,20 l1,3 l3,1 l-3,1 l-1,3 l-1,-3 l-3,-1 l3,-1 Z"/></svg>`
         : `<svg viewBox="0 0 38 32">${wings(main)}</svg>`;
@@ -1956,6 +2051,294 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { butterfly: flock[0], distance: Infinity }).butterfly;
         goTo(nearest, flower);
         nearest.boost = 2;
+      }
+    };
+  })();
+
+  // ================= 11 B. NUESTRAS MASCOTICAS =================
+  // Oreo, Panpan y Sky, como en nuestro juego, y Kuromi y Melody, como son de verdad.
+  const Pets = (() => {
+    const layer = $('petsLayer');
+    // Los animalitos llevan el contorno casi negro de nuestro juego
+    const DARK = '#2a2427';
+    const line = `stroke="${DARK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+    // Ojitos abiertos y, para cuando duermen, ojitos cerrados
+    const sleepy = (lx, rx, y, color = DARK) => `<path class="pet-sleepy" fill="none" stroke="${color}" stroke-width="2.4" d="M${lx - 3.5},${y} q3.5,3 7,0 M${rx - 3.5},${y} q3.5,3 7,0"/>`;
+    const dots = (lx, rx, y, rx2, ry, shine, color = DARK) => `<g class="pet-eye">${[lx, rx].map((x) => `<ellipse cx="${x}" cy="${y}" rx="${rx2}" ry="${ry}" fill="${color}" stroke="none"/>${shine ? `<circle cx="${f1(x + rx2 * 0.35)}" cy="${f1(y - ry * 0.4)}" r="${f1(rx2 * 0.38)}" fill="#fff" stroke="none"/>` : ''}`).join('')}</g>${sleepy(lx, rx, y, color)}`;
+    const blush = (lx, rx, y, color = '#ffbfcb') => `<ellipse cx="${lx}" cy="${y}" rx="4" ry="2.4" fill="${color}" stroke="none"/><ellipse cx="${rx}" cy="${y}" rx="4" ry="2.4" fill="${color}" stroke="none"/>`;
+    const shadow = '<ellipse cx="50" cy="105" rx="26" ry="4.5" fill="#1f5a2a" opacity=".22"/>';
+    // Las piezas de un lado se dibujan una vez y se reflejan para el otro (solo coordenadas absolutas)
+    const mirror = (d) => d.replace(/(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)/g, (m, x, _a, y) => `${f1(100 - Number(x))},${y}`);
+    const pair = (d, fill, extra = '') => `<path fill="${fill}" ${extra} d="${d}"/><path fill="${fill}" ${extra} d="${mirror(d)}"/>`;
+    // Pelo esponjoso, para Melody
+    const fluffy = (cx, cy, rx, ry, bumps) => {
+      let d = '';
+      for (let i = 0; i <= 96; i++) {
+        const a = (i / 96) * Math.PI * 2;
+        const k = 1 + 0.06 * Math.max(0, Math.cos(a * bumps));
+        d += `${i ? 'L' : 'M'}${f1(cx + Math.cos(a) * rx * k)},${f1(cy + Math.sin(a) * ry * k)}`;
+      }
+      return `${d}Z`;
+    };
+    const KUROMI_HEAD = 'M50,22 C69,22 81,28 83.5,43 C85.5,56 81,71.5 50,72.5 C19,71.5 14.5,56 16.5,43 C19,28 31,22 50,22 Z';
+    // Los ojos de Kuromi: verde amarillo, párpado plano y pupila de rayita, como en la foto
+    const catEye = (x, y) => `<path fill="#c8c95e" stroke-width="2.4" d="M${x - 5.4},${y - 1.6} Q${x},${y - 3.4} ${x + 5.4},${y - 1.6} C${x + 5.6},${y + 3.6} ${x + 3},${y + 5.8} ${x},${y + 5.8} C${x - 3},${y + 5.8} ${x - 5.6},${y + 3.6} ${x - 5.4},${y - 1.6} Z"/><ellipse cx="${x}" cy="${y + 1.6}" rx="1.5" ry="3.4" fill="${DARK}" stroke="none"/><circle cx="${x + 2}" cy="${y - 0.2}" r="1.1" fill="#fff" stroke="none"/>`;
+
+    const ART = {
+      // Oreo: perrito blanco de orejotas negras, chupo azul, camisita celeste y alitas de murciélago
+      oreo: `${shadow}<g ${line}>
+        ${pair('M28,77 C22,73.5 16,71.5 12,71.5 C8,76 4,80 1.5,84.5 C5,84 8,85.5 9.5,88 C11.5,85.5 15,85.5 17.5,88.5 C19.5,86 23.5,86 27,88.5 Z', '#3a3440')}
+        <path fill="none" stroke="#615869" stroke-width="1.5" d="M12,72.5 L16,86.5 M12,72.5 L9.6,86.5 M88,72.5 L84,86.5 M88,72.5 L90.4,86.5"/>
+        <path fill="#fff" d="M70,91 C76.5,87.5 82,91.5 79,96.5 C77,99.5 73,99 71,97.5"/>
+        <path fill="#fff" d="M29,76 C27,86 27,96 29,101.5 C30,104 34,104.5 40,104.5 H60 C66,104.5 70,104 71,101.5 C73,96 73,86 71,76 Z"/>
+        <path fill="#cfe9fb" d="M28.6,76 C27.6,82 27.4,88 27.8,93.5 Q50,97.5 72.2,93.5 C72.6,88 72.4,82 71.4,76 Z"/>
+        <path fill="none" d="M50,98.5 V104.5"/>
+        ${pair('M37.5,79.5 C33.5,83 33.5,88.5 37,90 C38.6,90.6 40.6,90.2 41.8,89', 'none')}
+        <path fill="#fff" d="M50,21.5 C64,21.5 74,24 79,34 C83,42 85,56 84,66 C83,74 76,77.5 50,77.5 C24,77.5 17,74 16,66 C15,56 17,42 21,34 C26,24 36,21.5 50,21.5 Z"/>
+        ${pair('M37,22.5 C27,18.5 10,21 4.5,33 C1,42 3,55 12,57.5 C20,59 26,53 29.5,45 C32.5,38 37,29 37,22.5 Z', '#1f1c22')}
+        ${dots(40, 60, 57, 2.6, 3.4, false)}
+        <g stroke="#62b0e2" stroke-width="1.8">
+          <path fill="#d9f0fd" d="M46.5,66.5 C46.5,72.5 53.5,72.5 53.5,66.5"/>
+          <path fill="#bfe4fb" d="M43.5,62.5 C43.5,59.2 56.5,59.2 56.5,62.5 C56.5,66 53,67.8 50,67.8 C47,67.8 43.5,66 43.5,62.5 Z"/>
+        </g>
+        <path fill="#fff" stroke="none" d="M50,62.6 c-1,-1.6 -3.2,-.8 -2.6,.9 l2.6,2.4 l2.6,-2.4 c.6,-1.7 -1.6,-2.5 -2.6,-.9 Z"/>
+      </g>`,
+      // Panpan: panda con moño rosado, camiseta de rayas rojas, shorts oscuros y su pingüinito de peluche
+      panpan: `${shadow}<g ${line}>
+        ${pair('M48,17.5 C44,9 36,3 30.5,5.5 C26.5,8 28,17 35,20.5 C40,22.5 45,21 48,17.5 Z', '#f6a6ab')}
+        ${pair('M44.5,15.5 C41,10.5 36.5,8 33.5,9.5 C32,12 33.5,15.5 37,17.5 C40,18.5 43,17.5 44.5,15.5 Z', '#fbc7c9', 'stroke="none"')}
+        <circle cx="50" cy="18.5" r="4.2" fill="#ee8b93"/>
+        <circle cx="31" cy="27" r="9" fill="#3a3a3f"/><circle cx="69" cy="27" r="9" fill="#3a3a3f"/>
+        <path fill="#3a3a3f" d="M30,85 C29,93 29.5,99 31,103 C32,104.5 36,104.5 48,104.5 C49.5,104.5 50,103 50,99.5 C50,103 50.5,104.5 52,104.5 C64,104.5 68,104.5 69,103 C70.5,99 71,93 70,85 Z"/>
+        ${pair('M27.5,67 C23,69.5 20.8,79.5 21.2,87.5 C21.5,90.5 25.6,91 27,88.5 C28.6,83.5 29.2,76 29.2,70 Z', '#3a3a3f')}
+        ${pair('M28.3,66 C24.8,67 23,70.5 22.5,73.8 L29.4,75 Z', '#fff')}
+        <path fill="#fff" d="M29,65 C27.5,73 27,80 27.5,87 Q50,89.5 72.5,87 C73,80 72.5,73 71,65 Z"/>
+        <path fill="#ea6f63" stroke="none" d="M28.4,68.4 H71.6 V71.6 H28.4 Z M28,74 H72 V77.2 H28 Z M27.7,79.6 H72.3 V82.8 H27.7 Z M27.5,84.6 H72.5 V88 Q50,90 27.5,88 Z"/>
+        <path fill="none" d="M29,65 C27.5,73 27,80 27.5,87 Q50,89.5 72.5,87 C73,80 72.5,73 71,65"/>
+        <g stroke-width="2.2">
+          <ellipse cx="81.5" cy="82" rx="6.4" ry="7.6" transform="rotate(22 81.5 82)" fill="#3a3a3f"/>
+          <ellipse cx="82" cy="81" rx="3.9" ry="4.3" fill="#fff"/>
+          <ellipse cx="77.5" cy="87.5" rx="3.2" ry="2.6" fill="#f4b3bd"/>
+        </g>
+        <circle cx="80.6" cy="80.4" r=".9" fill="${DARK}" stroke="none"/><circle cx="83.6" cy="80.4" r=".9" fill="${DARK}" stroke="none"/>
+        <path fill="#ffb347" stroke="none" d="M81.1,82 h2 l-1,1.5 Z"/>
+        <path fill="#fff" d="M50,21.5 C65,21.5 75,27 78.5,38 C82,49 81,60 72,64.5 C64,67.5 36,67.5 28,64.5 C19,60 18,49 21.5,38 C25,27 35,21.5 50,21.5 Z"/>
+        <ellipse cx="38.5" cy="44.5" rx="7.2" ry="9" transform="rotate(14 38.5 44.5)" fill="#1f1c22" stroke="none"/>
+        <ellipse cx="61.5" cy="44.5" rx="7.2" ry="9" transform="rotate(-14 61.5 44.5)" fill="#1f1c22" stroke="none"/>
+        <g class="pet-eye"><circle cx="39.5" cy="46" r="2.3" fill="#fff" stroke="none"/><circle cx="60.5" cy="46" r="2.3" fill="#fff" stroke="none"/></g>${sleepy(39.5, 60.5, 46, '#fff')}
+        <ellipse cx="50" cy="51.5" rx="3.6" ry="2.4" fill="#1f1c22" stroke="none"/>
+        <path fill="none" stroke-width="2.2" d="M46.8,56 q3.2,2.4 6.4,0"/>
+      </g>`,
+      // Sky: pingüino gris con gorrito de calabaza, gafas verdes, cuello de hojas y disfraz de calabaza
+      sky: `${shadow}<g ${line}>
+        <ellipse cx="36" cy="101.5" rx="8" ry="3.2" fill="#f6a8bb"/><ellipse cx="64" cy="101.5" rx="8" ry="3.2" fill="#f6a8bb"/>
+        ${pair('M21,69.5 C14.5,71.5 9.5,76.5 7.5,82.5 C12.5,82.5 17.5,80.5 21,77.5 Z', '#47474f')}
+        <path fill="#47474f" d="M25,84 C24,92 30,99.5 50,99.5 C70,99.5 76,92 75,84 Z"/>
+        <ellipse cx="50" cy="91.5" rx="16" ry="3.6" fill="#fff" stroke="none"/>
+        <path fill="#f6a73c" d="M24,64 C17.5,70 16.5,82 22,88 q5.6,4.2 11.2,0 q5.6,4.2 11.2,0 q5.6,4.2 11.2,0 q5.6,4.2 11.2,0 q5.6,4.2 11.2,0 C83.5,82 82.5,70 76,64 Z"/>
+        <path fill="none" stroke="#d9772a" stroke-width="2" d="M35,65 C31,72 31,82 34,89 M65,65 C69,72 69,82 66,89"/>
+        <ellipse cx="27.5" cy="76" rx="3.2" ry="2.2" fill="#ffd36b" stroke="none"/><ellipse cx="72.5" cy="76" rx="3.2" ry="2.2" fill="#ffd36b" stroke="none"/>
+        <path fill="#c9661f" stroke="none" d="M33,70.5 q4,-3.4 8,0 q-4,1.6 -8,0 Z M59,70.5 q4,-3.4 8,0 q-4,1.6 -8,0 Z M48,71.5 l2,-3.2 l2,3.2 Z M37,75.5 Q50,79 63,75.5 Q61,84.5 50,84.5 Q39,84.5 37,75.5 Z"/>
+        <path fill="#f6a73c" stroke="none" d="M44,76.4 h3 v2.6 h-3 Z M53,76.4 h3 v2.6 h-3 Z"/>
+        <ellipse cx="50" cy="44" rx="28.5" ry="21.5" fill="#47474f"/>
+        <path fill="#fff" d="M50,37 C44,31 28,31 26,44 C25,56 36,63.5 50,63.5 C64,63.5 75,56 74,44 C72,31 56,31 50,37 Z"/>
+        <path fill="#7cc25b" stroke="#3f8f3f" stroke-width="2.2" d="M23,60 Q50,55 77,60 L78,64 q-5.4,6 -10.8,0 q-5.4,6 -10.8,0 q-5.4,6 -10.8,0 q-5.4,6 -10.8,0 q-5.4,6 -10.8,0 Z"/>
+        <path fill="none" stroke="#3f8f3f" stroke-width="1.4" d="M34,61.5 v4 M45,61 v4.5 M56,61 v4.5 M67,61.5 v4"/>
+        ${blush(31, 69, 50)}
+        <g fill="#fff" stroke="#3b9a45" stroke-width="2.8"><circle cx="39.5" cy="41" r="8.4"/><circle cx="60.5" cy="41" r="8.4"/></g>
+        <path fill="none" stroke="#3b9a45" stroke-width="2.6" d="M47.6,39 Q50,37.6 52.4,39"/>
+        ${dots(41.5, 58.5, 41.5, 2.2, 2.5, false)}
+        <path fill="#2f2f36" stroke="none" d="M48,44.6 h4 q0,2.6 -2,2.6 q-2,0 -2,-2.6 Z"/>
+        <path fill="#f6a73c" d="M29.5,25 C28.5,15 38,11 50,11 C62,11 71.5,15 70.5,25 q-3.4,4.6 -6.8,0.5 q-3.4,4.6 -6.8,0 q-3.4,4.6 -6.8,0 q-3.4,4.6 -6.8,0 q-3.4,4.6 -6.8,0 q-3.4,4.6 -6.8,-0.5 Z"/>
+        <path fill="none" stroke="#d9772a" stroke-width="2" d="M41,12.5 C37.5,16.5 37.5,22 39.5,26.5 M59,12.5 C62.5,16.5 62.5,22 60.5,26.5"/>
+        <ellipse cx="44" cy="16" rx="3" ry="2" fill="#ffd36b" stroke="none"/>
+        <path fill="#6cb84f" stroke-width="2.4" d="M38,25 C32,23 26,26 25.5,33 C28,32 30,34.5 33,33 C36,31.5 37.5,28.5 38,25 Z"/>
+        <path fill="#5aa545" stroke-width="2.4" d="M48,13 C48.5,8 52,4.5 57.5,3 L60,6.5 C56,8 53.5,10.5 53.5,13.5 Z"/>
+      </g>`,
+      // Kuromi: gatica blanca con gorrito negro, raya blanca en la frente, bigote negro, collar morado y cola negra
+      kuromi: `${shadow}<defs><clipPath id="kuromiHead"><path d="${KUROMI_HEAD}"/></clipPath></defs><g ${line}>
+        <path fill="#232026" d="M66,93 C84,93 91,80 87,66 C86,61.5 80.5,62 81,67 C83,78 78,86 66,87 Z"/>
+        <path fill="#fff" d="M30,75 C28,86 28,96 30,101.5 C31,104 35,104.5 41,104.5 H59 C65,104.5 69,104 70,101.5 C72,96 72,86 70,75 Z"/>
+        <path fill="none" d="M50,97.5 V104.5"/>
+        <path fill="#232026" stroke="none" d="M55.5,101.5 q2.6,-2.4 5.2,0 q-2.6,1.8 -5.2,0 Z M62,99.2 q1.8,-1.7 3.6,0 q-1.8,1.3 -3.6,0 Z"/>
+        <path fill="#9d7fd0" d="M29,71 Q50,79 71,71 L71,76.5 Q50,84.5 29,76.5 Z"/>
+        <rect x="58.5" y="78.5" width="4.4" height="7.5" rx="2.2" fill="#dfe3ea" stroke-width="2"/>
+        ${pair('M18.5,38 C18,26 19.5,13 22.5,5.5 C28,9 36,15.5 43,23 Z', '#232026')}
+        ${pair('M24.5,27 C24.5,22.5 25.3,18 26.4,14.5 C29,16.8 31.5,19.5 33.5,22.5 Z', '#e9a3b3', 'stroke="none"')}
+        <path fill="#fff" d="${KUROMI_HEAD}"/>
+        <g clip-path="url(#kuromiHead)" stroke="none" fill="#232026">
+          <path d="M0,0 H47.6 C47.4,10 46.6,22 45.3,33.5 C37,31 27,34 22,42.5 C19.5,47 18.5,53 18,60 H0 Z"/>
+          <path d="M52.4,0 H100 V50 H83 C79.5,39 67,30.5 54.7,33.5 C53.4,22 52.6,10 52.4,0 Z"/>
+          <path d="M50,42.5 C51.5,47.5 53.5,51 58.5,53 C64.5,55.5 67.5,60 64.5,64.5 C61,69.5 55.5,72 50,72 C44.5,72 39,69.5 35.5,64.5 C32.5,60 35.5,55.5 41.5,53 C46.5,51 48.5,47.5 50,42.5 Z"/>
+        </g>
+        <path fill="none" d="${KUROMI_HEAD}"/>
+        <path fill="#4b4550" stroke="none" d="M46.8,55 h6.4 q-1,3.2 -3.2,3.6 q-2.2,-.4 -3.2,-3.6 Z"/>
+        <path fill="none" stroke="#77707f" stroke-width="1.5" d="M50,58.6 v2 M46.5,61.6 q1.75,1.6 3.5,-1 q1.75,2.6 3.5,1"/>
+        <g class="pet-eye">${catEye(36, 46)}${catEye(64, 46)}</g>${sleepy(36, 64, 47.5)}
+        ${blush(25.5, 74.5, 58)}
+        <path fill="none" stroke-width="1.4" d="M19.5,55.5 h-9 M20,59 l-8.5,3 M80.5,55.5 h9 M80,59 l8.5,3"/>
+      </g>`,
+      // Melody: perrita peludita blanca, orejas largas color caramelo, copete clarito, naricita grande y dientitos
+      melody: `${shadow}<g ${line}>
+        <path fill="#fff" d="${fluffy(50, 86, 20, 17, 9)}"/>
+        <path fill="none" stroke="#e5d3c0" stroke-width="1.6" d="M43.5,79 q-1,5 1,9.5 M56.5,79 q1,5 -1,9.5"/>
+        <ellipse cx="41.5" cy="100.5" rx="7" ry="4.6" fill="#d4955f"/><ellipse cx="58.5" cy="100.5" rx="7" ry="4.6" fill="#d4955f"/>
+        <path fill="none" stroke="#a9693a" stroke-width="1.3" d="M39.5,98.8 v2.6 M43,98.5 v2.7 M56.5,98.8 v2.6 M60,98.5 v2.7"/>
+        <path fill="#fff" d="${fluffy(50, 45, 31, 27, 11)}"/>
+        <path fill="#efd0a4" stroke="none" d="M38,25 C41,19 59,19 62,25 C60,28.5 58,28 57,32 C55,29.5 53,32 50,35.5 C47,32 45,29.5 43,32 C42,28 40,28.5 38,25 Z"/>
+        <path fill="none" stroke="#d9ae7a" stroke-width="1.4" d="M45,22.5 q1,4 0,7.5 M50,21.5 v9 M55,22.5 q-1,4 0,7.5"/>
+        ${pair('M28,24 C20,23 14,30 13,40 C11.5,44 13,47 11.5,51 C10,55 12.5,58 11,62 C10,66 12.5,69 12,73 C14.5,71.5 16,74.5 18.5,72 C20.5,74.5 23,71.5 24.5,69 C26.5,59 28.5,48 31,38 C32.5,31 32,25 28,24 Z', '#e8bd8a')}
+        <path fill="none" stroke="#c99560" stroke-width="1.5" d="M19,33 q-3,13 -2,30 M25,31 q-3,14 -2.5,32 M81,33 q3,13 2,30 M75,31 q3,14 2.5,32"/>
+        <ellipse cx="44.5" cy="51.8" rx="2.6" ry="1.8" fill="#f0d2b0" stroke="none"/><ellipse cx="55.5" cy="51.8" rx="2.6" ry="1.8" fill="#f0d2b0" stroke="none"/>
+        ${dots(39.5, 60.5, 46.5, 3.6, 4.2, true, '#2b1a14')}
+        ${blush(34, 66, 56)}
+        <ellipse cx="50" cy="54.5" rx="5" ry="3.7" fill="#8c5d66" stroke-width="2.2"/>
+        <ellipse cx="48.4" cy="53.3" rx="1.6" ry="1" fill="#fff" fill-opacity=".6" stroke="none"/>
+        <path fill="none" stroke-width="2" d="M45.6,60 q4.4,3.6 8.8,0"/>
+        <path fill="#fff" stroke-width="1.3" d="M47.4,61.4 l.9,-2.3 l.9,2.3 Z M50.8,61.4 l.9,-2.3 l.9,2.3 Z"/>
+      </g>`
+    };
+
+    const BUBBLES = {
+      heart: `<svg viewBox="0 0 24 24"><path fill="#ff6f8e" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round" d="M12,20 C5,15 3,11 3,8.5 A4.5,4.5 0 0 1 12,6.5 A4.5,4.5 0 0 1 21,8.5 C21,11 19,15 12,20 Z"/></svg>`,
+      bone: `<svg viewBox="0 0 24 24"><path fill="#fff6e6" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round" d="M7,9 C4,6 1,9 3.5,11 C1,13 4,17 7,14 H17 C20,17 23,13 20.5,11 C23,9 20,6 17,9 Z"/></svg>`,
+      fish: `<svg viewBox="0 0 24 24"><path fill="#a8e0f7" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round" d="M3,12 C7,6 14,6 18,12 C14,18 7,18 3,12 Z M18,12 L22,8 V16 Z"/><circle cx="8" cy="11" r="1.2" fill="${INK}"/></svg>`,
+      bamboo: `<svg viewBox="0 0 24 24"><g stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"><rect x="9" y="3" width="5" height="18" rx="2" fill="#8fd37a"/><path fill="none" d="M9,9h5M9,15h5"/><path fill="#7cc865" d="M14,8 C18,4 22,5 22,7 C19,9 16,9 14,8 Z"/></g></svg>`,
+      star: `<svg viewBox="0 0 24 24"><path fill="#ffd36b" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round" d="M12,2.5 l2.8,5.8 l6.3,.8 l-4.6,4.4 l1.2,6.3 l-5.7,-3.1 l-5.7,3.1 l1.2,-6.3 l-4.6,-4.4 l6.3,-.8 Z"/></svg>`,
+      flower: `<svg viewBox="0 0 24 24"><g stroke="${INK}" stroke-width="1.6"><circle cx="12" cy="6" r="4" fill="#ff9fb1"/><circle cx="18" cy="11" r="4" fill="#ff9fb1"/><circle cx="15.5" cy="18" r="4" fill="#ff9fb1"/><circle cx="8.5" cy="18" r="4" fill="#ff9fb1"/><circle cx="6" cy="11" r="4" fill="#ff9fb1"/><circle cx="12" cy="12.5" r="3.4" fill="#ffd36b"/></g></svg>`
+    };
+
+    const CREW = [
+      { key: 'oreo', name: 'Oreo', likes: ['bone', 'heart', 'star'] },
+      { key: 'panpan', name: 'Panpan', likes: ['bamboo', 'heart', 'flower'] },
+      { key: 'sky', name: 'Sky', likes: ['fish', 'star', 'heart'] },
+      { key: 'kuromi', name: 'Kuromi', likes: ['fish', 'heart', 'flower'] },
+      { key: 'melody', name: 'Melody', likes: ['bone', 'flower', 'heart'] }
+    ];
+
+    let crew = [];
+    let running = false;
+    let last = 0;
+
+    function bounds() {
+      const box = meadow.getBoundingClientRect();
+      const width = meadow.clientWidth;
+      const viewTop = Math.max(0, -box.top);
+      const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock-space')) || 76;
+      const top = Math.max(110, viewTop + 90);
+      const bottom = Math.min(meadow.clientHeight - 30, viewTop + window.innerHeight - box.top * (box.top > 0 ? 1 : 0) - dock - 30);
+      return { left: width * 0.08, right: width * 0.92, top, bottom: Math.max(top + 60, bottom) };
+    }
+
+    function pickSpot(pet) {
+      const b = bounds();
+      pet.tx = b.left + Math.random() * (b.right - b.left);
+      pet.ty = b.top + Math.random() * (b.bottom - b.top);
+      pet.walking = true;
+      pet.el.classList.add('is-walking');
+    }
+
+    function place(pet) {
+      pet.el.style.transform = `translate3d(${pet.x.toFixed(1)}px,${pet.y.toFixed(1)}px,0)`;
+      pet.el.style.zIndex = String(Math.round(pet.y));
+    }
+
+    function flash(pet, className, ms) {
+      pet.el.classList.add(className);
+      clearTimeout(pet[className]);
+      pet[className] = setTimeout(() => pet.el.classList.remove(className), ms);
+    }
+
+    function think(pet) {
+      const like = pet.def.likes[Math.floor(Math.random() * pet.def.likes.length)];
+      pet.el.querySelector('.pet-bubble').innerHTML = BUBBLES[like];
+      flash(pet, 'show-bubble', 2200);
+    }
+
+    function create(def, index) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'pet';
+      el.setAttribute('aria-label', `${def.name}. Tócale para saludar.`);
+      el.innerHTML = `<span class="pet-tag">${def.name}</span><span class="pet-bubble"></span><div class="pet-flip"><div class="pet-bob"><svg viewBox="0 0 100 110" aria-hidden="true">${ART[def.key]}</svg></div></div><span class="pet-zzz">z z</span>`;
+      layer.appendChild(el);
+      const b = bounds();
+      const pet = {
+        def, el, walking: false, rest: 1 + Math.random() * 3, face: index % 2 ? -1 : 1,
+        x: b.left + ((index + 0.5) / CREW.length) * (b.right - b.left),
+        y: Math.min(b.bottom, 150 + (index % 3) * 46),
+        speed: 26 + Math.random() * 16
+      };
+      el.style.setProperty('--face', pet.face);
+      place(pet);
+      el.addEventListener('click', (event) => {
+        event.stopPropagation();
+        Sound.tinkle();
+        el.classList.remove('is-hop');
+        void el.offsetWidth;
+        flash(pet, 'is-hop', 700);
+        flash(pet, 'show-tag', 2200);
+        floatHearts($('waterLayer'), pet.x, meadow.offsetTop + pet.y - el.offsetHeight * 0.8);
+        if (state.time !== 'night') think(pet);
+      });
+      return pet;
+    }
+
+    function tick(now) {
+      if (!running) return;
+      requestAnimationFrame(tick);
+      if (document.hidden) { last = now; return; }
+      const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+      last = now;
+      const asleep = state.time === 'night';
+      crew.forEach((pet) => {
+        if (asleep) return;
+        if (!pet.walking) {
+          pet.rest -= dt;
+          if (pet.rest <= 0) {
+            if (Math.random() < 0.3) think(pet);
+            pickSpot(pet);
+          }
+          return;
+        }
+        const dx = pet.tx - pet.x;
+        const dy = pet.ty - pet.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < 3) {
+          pet.walking = false;
+          pet.rest = 2 + Math.random() * 5;
+          pet.el.classList.remove('is-walking');
+          return;
+        }
+        const step = Math.min(distance, pet.speed * dt);
+        pet.x += (dx / distance) * step;
+        pet.y += (dy / distance) * step;
+        const face = dx > 0 ? 1 : -1;
+        if (Math.abs(dx) > 2 && face !== pet.face) {
+          pet.face = face;
+          pet.el.style.setProperty('--face', face);
+        }
+        place(pet);
+      });
+    }
+
+    return {
+      refresh() {
+        if (!layer) return;
+        if (!crew.length) crew = CREW.map(create);
+        const asleep = state.time === 'night';
+        crew.forEach((pet) => {
+          pet.el.classList.toggle('is-asleep', asleep);
+          if (asleep) {
+            pet.walking = false;
+            pet.el.classList.remove('is-walking');
+          }
+        });
+        if (!reducedMotion && !running) {
+          running = true;
+          last = performance.now();
+          requestAnimationFrame(tick);
+        }
       }
     };
   })();
@@ -2350,11 +2733,11 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#faf7ef';
+    ctx.fillStyle = '#fffaf0';
     ctx.fillRect(0, 0, width, height);
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#1f2a20';
-    ctx.font = '400 104px Newsreader, serif';
+    ctx.fillStyle = '#4a3226';
+    ctx.font = '600 104px Fredoka, sans-serif';
     ctx.fillText('Para ti', width / 2, 190);
     const art = await loadImage(svgDataURI(createFlowerSVG(selectedType(), $('inputFlowerColor').value, { head: true }), 160, 160));
     ctx.drawImage(art, width / 2 - 60, 212, 120, 120);
@@ -2365,11 +2748,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const qr = await loadImage(qrImageURL);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(qr, width / 2 - 264, 386, 528, 528);
-    ctx.fillStyle = '#1f2a20';
-    ctx.font = '400 50px Newsreader, serif';
+    ctx.fillStyle = '#4a3226';
+    ctx.font = '600 50px Fredoka, sans-serif';
     ctx.fillText('Escanéame y nacerá tu flor', width / 2, 1050);
-    ctx.fillStyle = '#55604f';
-    ctx.font = 'italic 400 32px Newsreader, serif';
+    ctx.fillStyle = '#7a5b47';
+    ctx.font = '600 30px Nunito, sans-serif';
     ctx.fillText('Las flores reales se marchitan. Esta no.', width / 2, 1110);
     canvas.toBlob((blob) => downloadBlob(blob, `tarjetita-${slug($('inputFlowerTitle').value)}.png`), 'image/png');
   });
@@ -2446,6 +2829,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeMode(timeFromClock());
   resetForm();
   renderGarden();
+  Pets.refresh();
   drawFairyLights();
   window.addEventListener('resize', drawFairyLights);
   if (document.fonts) document.fonts.ready.then(drawFairyLights);
