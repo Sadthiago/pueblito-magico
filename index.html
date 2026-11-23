@@ -275,6 +275,14 @@
     </div>
   </nav>
 
+  <!-- Mini reproductor: lo que está sonando de fondo en el jardín -->
+  <div class="now-playing" id="nowPlaying" hidden>
+    <img class="now-playing__cover" id="nowCover" alt="">
+    <div class="now-playing__text" aria-live="polite"><strong id="nowTitle"></strong><small id="nowArtist"></small></div>
+    <button id="btnNowToggle" type="button" aria-label="Pausar la música"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="nowToggleIcon" fill="currentColor" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+    <button id="btnNowNext" type="button" aria-label="Siguiente canción"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 5l9 7-9 7zM16 5h3v14h-3z"/></svg></button>
+  </div>
+
   <!-- ================= MEMORIA DE LA FLOR ================= -->
   <dialog class="sheet" id="flowerModal" aria-labelledby="modalTitle">
     <canvas class="fx-canvas"></canvas>
@@ -558,18 +566,29 @@
 
       <section class="planted-section" id="songsSection" hidden>
         <h3 class="card-subtitle">Canciones del jardín</h3>
-        <p class="card-note">Suenan solas cada cierto tiempo mientras el jardín está abierto, en su celular y en el tuyo. Archivo de hasta 8 MB o enlace directo a un .mp3.</p>
+        <p class="card-note">Suenan de fondo, bajito, una tras otra, en su celular y en el tuyo. Archivo de hasta 8 MB o enlace directo a un .mp3. Si el archivo trae nombre, artista y portada, se llenan solos.</p>
         <ul class="memory-list memory-list--admin" id="songList"></ul>
         <div class="song-form">
-          <div class="field">
-            <label for="inputSongTitle">Nombre de la canción</label>
-            <input type="text" id="inputSongTitle" maxlength="80" placeholder="Nuestra canción">
-          </div>
           <div class="field">
             <label for="fileSong">Archivo de audio</label>
             <input type="file" id="fileSong" accept="audio/*">
             <input type="url" id="inputSongUrl" placeholder="o pega un enlace directo a un .mp3">
             <p class="field-error" id="songError" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="inputSongTitle">Nombre de la canción</label>
+            <input type="text" id="inputSongTitle" maxlength="80" placeholder="Nuestra canción">
+          </div>
+          <div class="field">
+            <label for="inputSongArtist">Artista</label>
+            <input type="text" id="inputSongArtist" maxlength="80" placeholder="Quién la canta">
+          </div>
+          <div class="field">
+            <label for="fileSongCover">Portada <small>(opcional)</small></label>
+            <div class="cover-row">
+              <img class="cover-preview" id="songCoverPreview" alt="" hidden>
+              <input type="file" id="fileSongCover" accept="image/*">
+            </div>
           </div>
           <button class="btn btn--soft" id="btnAddSong" type="button">Agregar canción</button>
         </div>

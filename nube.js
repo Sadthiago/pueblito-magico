@@ -288,25 +288,37 @@ const Cloud = {
     if (!this.user) return () => {};
     return this._db.collection('canciones').onSnapshot((snapshot) => {
       const songs = snapshot.docs
-        .map((doc) => ({ id: doc.id, title: String(doc.data().title || 'Canción').slice(0, 80), ref: safeMusic(doc.data().ref), addedAt: doc.data().addedAt || 0 }))
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: String(data.title || 'Canción').slice(0, 80),
+            artist: String(data.artist || '').slice(0, 80),
+            cover: safePhoto(data.cover),
+            ref: safeMusic(data.ref),
+            addedAt: data.addedAt || 0
+          };
+        })
         .filter((song) => song.ref)
         .sort((a, b) => a.addedAt - b.addedAt);
       onSongs(songs);
     }, (error) => console.error('No pude escuchar las canciones', error));
   },
 
-  // value: un data:audio/… del archivo elegido o un enlace https a un .mp3
-  async addSong(title, value) {
+  // value: un data:audio/… del archivo elegido o un enlace https a un .mp3; cover: la portada (data:image/… o '')
+  async addSong({ title, artist = '', cover = '', value }) {
     if (!this.isAdmin()) throw new Error('solo Santiago');
     const ref = /^https?:\/\//i.test(value) ? value : await this._uploadFile(value);
     if (!safeMusic(ref)) throw new Error('canción no válida');
-    await this._db.collection('canciones').add({ title: title.slice(0, 80), ref, addedAt: Date.now() });
+    const coverRef = cover ? await this._uploadFile(cover) : '';
+    await this._db.collection('canciones').add({ title: title.slice(0, 80), artist: artist.slice(0, 80), cover: coverRef, ref, addedAt: Date.now() });
   },
 
   async removeSong(song) {
     if (!this.isAdmin()) return;
     await this._db.collection('canciones').doc(song.id).delete();
     await this._removeFile(song.ref).catch(() => {});
+    if (song.cover) await this._removeFile(song.cover).catch(() => {});
     Media.remove(song.ref).catch(() => {});
   },
 

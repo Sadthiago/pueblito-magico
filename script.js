@@ -875,6 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let onStop = null;
+    let onUpdate = null;
     let loud = false;
 
     function stop() {
@@ -951,6 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (flower && flower.music) {
         $('btnFlowerMelody').querySelector('span').textContent = current === flower.music ? 'Pausar su melodía' : 'Escuchar su melodía';
       }
+      if (onUpdate) onUpdate();
     }
 
     document.addEventListener('visibilitychange', () => {
@@ -963,7 +965,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return {
       play, stop, updateUI, unlock,
       get current() { return current; },
-      set onStop(fn) { onStop = fn; }
+      set onStop(fn) { onStop = fn; },
+      set onUpdate(fn) { onUpdate = fn; }
     };
   })();
 
@@ -993,6 +996,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let playingSong = null;
     let backgroundSpec = '';
     let resumeTimer = null;
+    let lastTrack = '';
+    let nowInfo = null;
+    const DEFAULT_COVER = svgDataURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#ffd0da"/><path d="M20 32V14l14-3v18" fill="none" stroke="#4a3226" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="32" r="5" fill="#ffd36b" stroke="#4a3226" stroke-width="3"/><circle cx="30" cy="29" r="5" fill="#ffd36b" stroke="#4a3226" stroke-width="3"/></svg>', 48, 48);
     try {
       on = localStorage.getItem(ON_KEY) !== '0';
       songs = JSON.parse(localStorage.getItem(LIST_KEY) || '[]');
@@ -1010,13 +1016,59 @@ document.addEventListener('DOMContentLoaded', () => {
         lastId = song.id;
         playingSong = song;
         backgroundSpec = song.ref;
+        setNow({ title: song.title, artist: song.artist || 'Canción del jardín', cover: song.cover });
         if (await Music.play(song.ref, { loop: false, quiet: true, volume: BACKGROUND_VOLUME })) return;
         playingSong = null;
       }
-      const tracks = Object.keys(TRACKS);
+      const tracks = Object.keys(TRACKS).filter((name) => name !== lastTrack);
       backgroundSpec = tracks[Math.floor(Math.random() * tracks.length)];
+      lastTrack = backgroundSpec;
+      setNow({ title: MELODY_NAMES[backgroundSpec] || 'Música del jardín', artist: 'Pueblito Mágico', cover: '' });
       Music.play(backgroundSpec, { volume: BACKGROUND_VOLUME });
     }
+
+    // ---------- Mini reproductor ----------
+    function setNow(info) {
+      nowInfo = info;
+      const cover = $('nowCover');
+      cover.src = DEFAULT_COVER;
+      if (info.cover) Media.url(info.cover).then((url) => { if (url && nowInfo === info) cover.src = url; }).catch(() => {});
+      $('nowTitle').textContent = info.title;
+      $('nowArtist').textContent = info.artist;
+      render();
+    }
+
+    function render() {
+      const panel = $('nowPlaying');
+      panel.hidden = !started || !nowInfo;
+      const playing = Boolean(Music.current) && Music.current === backgroundSpec;
+      panel.classList.toggle('is-playing', playing);
+      $('nowToggleIcon').setAttribute('d', playing ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M7 5l12 7-12 7z');
+      $('btnNowToggle').setAttribute('aria-label', playing ? 'Pausar la música' : 'Poner la música');
+    }
+    Music.onUpdate = render;
+
+    function next() {
+      on = true;
+      try { localStorage.setItem(ON_KEY, '1'); } catch (e) {}
+      started = true;
+      held = false;
+      if (Music.current) Music.stop();
+      clearTimeout(resumeTimer);
+      playNext();
+    }
+
+    $('btnNowToggle').addEventListener('click', () => {
+      if (Music.current === backgroundSpec && Music.current) {
+        on = false;
+        try { localStorage.setItem(ON_KEY, '0'); } catch (e) {}
+        clearTimeout(resumeTimer);
+        Music.stop();
+      } else {
+        next();
+      }
+    });
+    $('btnNowNext').addEventListener('click', next);
 
     // Cuando para lo que suena (se acaba una canción, o la melodía de una flor), vuelve la de fondo.
     Music.onStop = () => {
@@ -1824,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showWaterLevel(flower);
     $('btnFlowerMelody').hidden = !flower.music;
     showSpotify(flower);
+    playFlowerSong(flower);
     // Solo quien tiene el panel (la clave de Santiago) puede editarla.
     $('btnEditFlower').hidden = $('btnOpenAdmin').hidden;
     Music.updateUI();
@@ -1835,25 +1888,75 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnCloseModal').addEventListener('click', () => closeSheet(flowerModal));
 
   // La canción de Spotify de la cartica. Mientras la cartica está abierta, la música del jardín espera.
+  let spotifyApi = null;
+  let spotifyApiLoading = null;
+  let spotifyController = null;
+  function loadSpotifyApi() {
+    if (spotifyApi) return Promise.resolve(spotifyApi);
+    if (!spotifyApiLoading) {
+      spotifyApiLoading = new Promise((resolve, reject) => {
+        window.onSpotifyIframeApiReady = (api) => { spotifyApi = api; resolve(api); };
+        const script = document.createElement('script');
+        script.src = 'https://open.spotify.com/embed/iframe-api/v1';
+        script.async = true;
+        script.onerror = () => { spotifyApiLoading = null; reject(new Error('sin Spotify')); };
+        document.head.appendChild(script);
+        setTimeout(() => reject(new Error('Spotify tardó demasiado')), 8000);
+      });
+    }
+    return spotifyApiLoading;
+  }
+
+  function plainSpotifyFrame(box, ref) {
+    const frame = document.createElement('iframe');
+    frame.src = `https://open.spotify.com/embed/${ref}?utm_source=generator`;
+    frame.title = 'Canción de Spotify';
+    frame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+    box.innerHTML = '';
+    box.appendChild(frame);
+  }
+
+  // La canción de Spotify de la cartica: intenta arrancarla sola. Mientras está abierta, la del jardín espera.
   function showSpotify(flower) {
     const box = $('modalSpotify');
     box.innerHTML = '';
     box.hidden = !flower.spotify;
     if (!flower.spotify) return;
-    const frame = document.createElement('iframe');
-    frame.src = `https://open.spotify.com/embed/${flower.spotify}?utm_source=generator`;
-    frame.title = 'Canción de Spotify';
-    frame.loading = 'lazy';
-    frame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-    box.appendChild(frame);
     Radio.hold(true);
+    const holder = document.createElement('div');
+    box.appendChild(holder);
+    const ref = flower.spotify;
+    loadSpotifyApi().then((api) => {
+      if (state.activeFlower !== flower || !box.contains(holder)) return;
+      api.createController(holder, { uri: `spotify:${ref.replace('/', ':')}`, width: '100%', height: 152 }, (controller) => {
+        spotifyController = controller;
+        const frame = box.querySelector('iframe');
+        if (frame) frame.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+        controller.addListener('ready', () => { try { controller.play(); } catch (e) {} });
+      });
+    }).catch(() => plainSpotifyFrame(box, ref));
+  }
+
+  // Al abrir una flor suena su canción; al cerrarla, vuelve la del jardín.
+  let flowerSong = '';
+  function playFlowerSong(flower) {
+    flowerSong = '';
+    if (flower.spotify || !flower.music) return;
+    flowerSong = flower.music;
+    Radio.hold(true);
+    Music.play(flower.music);
   }
 
   flowerModal.addEventListener('close', () => {
-    if (!$('modalSpotify').hidden) {
-      $('modalSpotify').innerHTML = '';
-      Radio.hold(false);
+    const hadSpotify = !$('modalSpotify').hidden;
+    if (spotifyController) {
+      try { spotifyController.destroy(); } catch (e) {}
+      spotifyController = null;
     }
+    $('modalSpotify').innerHTML = '';
+    if (flowerSong && Music.current === flowerSong) Music.stop();
+    if (hadSpotify || flowerSong) Radio.hold(false);
+    flowerSong = '';
   });
 
   const TAB_NAMES = ['Carta', 'Fotos', 'Significado'];
@@ -3896,7 +3999,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.className = 'memory-row';
       item.innerHTML = '<span class="memory-row__text"><strong></strong><small></small></span><button class="btn-link" type="button">Escuchar</button><button class="btn-link" type="button">Quitar</button>';
       item.querySelector('strong').textContent = song.title;
-      item.querySelector('small').textContent = song.ref.startsWith('nube:') ? 'Archivo guardado en la nube' : 'Enlace';
+      item.querySelector('small').textContent = song.artist || (song.ref.startsWith('nube:') ? 'Archivo guardado en la nube' : 'Enlace');
       const [listen, remove] = item.querySelectorAll('button');
       listen.addEventListener('click', () => {
         if (Music.current === song.ref) Music.stop();
@@ -3920,6 +4023,59 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let songFile = '';
+  let songCover = '';
+  function setSongCover(dataURL) {
+    songCover = dataURL || '';
+    $('songCoverPreview').hidden = !songCover;
+    if (songCover) $('songCoverPreview').src = songCover;
+  }
+
+  // Lee el nombre, el artista y la portada que traen los .mp3 por dentro (etiquetas ID3).
+  async function readSongTags(file) {
+    const tags = {};
+    try {
+      const head = new Uint8Array(await file.slice(0, 10).arrayBuffer());
+      if (String.fromCharCode(head[0], head[1], head[2]) !== 'ID3' || head[3] < 3) return tags;
+      const version = head[3];
+      const size = ((head[6] & 127) << 21) | ((head[7] & 127) << 14) | ((head[8] & 127) << 7) | (head[9] & 127);
+      const bytes = new Uint8Array(await file.slice(10, 10 + size).arrayBuffer());
+      const text = (data, encoding) => {
+        const label = encoding === 0 ? 'latin1' : encoding === 3 ? 'utf-8' : encoding === 2 ? 'utf-16be' : 'utf-16';
+        return new TextDecoder(label).decode(data).replace(/\u0000/g, '').trim();
+      };
+      let at = 0;
+      while (at + 10 <= bytes.length) {
+        const id = String.fromCharCode(bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]);
+        if (!/^[A-Z0-9]{4}$/.test(id)) break;
+        const frameSize = version === 4
+          ? ((bytes[at + 4] & 127) << 21) | ((bytes[at + 5] & 127) << 14) | ((bytes[at + 6] & 127) << 7) | (bytes[at + 7] & 127)
+          : (bytes[at + 4] << 24) | (bytes[at + 5] << 16) | (bytes[at + 6] << 8) | bytes[at + 7];
+        const data = bytes.subarray(at + 10, at + 10 + frameSize);
+        if (id === 'TIT2') tags.title = text(data.subarray(1), data[0]);
+        if (id === 'TPE1') tags.artist = text(data.subarray(1), data[0]);
+        if (id === 'APIC' && !tags.cover) {
+          const encoding = data[0];
+          let i = 1;
+          while (i < data.length && data[i] !== 0) i++;
+          const mime = new TextDecoder('latin1').decode(data.subarray(1, i)) || 'image/jpeg';
+          i += 2;
+          if (encoding === 1 || encoding === 2) {
+            while (i + 1 < data.length && !(data[i] === 0 && data[i + 1] === 0)) i += 2;
+            i += 2;
+          } else {
+            while (i < data.length && data[i] !== 0) i++;
+            i += 1;
+          }
+          tags.cover = new Blob([data.subarray(i)], { type: mime.includes('/') ? mime : `image/${mime.toLowerCase()}` });
+        }
+        at += 10 + frameSize;
+      }
+    } catch (e) {
+      console.warn('No pude leer las etiquetas de la canción', e);
+    }
+    return tags;
+  }
+
   $('fileSong').addEventListener('change', async (event) => {
     const file = event.target.files[0];
     songFile = '';
@@ -3930,11 +4086,26 @@ document.addEventListener('DOMContentLoaded', () => {
       showError($('songError'), 'Esa canción pesa más de 8 MB. Usa una versión más ligera o un enlace directo.');
       return;
     }
-    if (!$('inputSongTitle').value.trim()) $('inputSongTitle').value = file.name.replace(/\.[^.]+$/, '').slice(0, 80);
+    const tags = await readSongTags(file);
+    if (!$('inputSongTitle').value.trim()) $('inputSongTitle').value = (tags.title || file.name.replace(/\.[^.]+$/, '')).slice(0, 80);
+    if (!$('inputSongArtist').value.trim() && tags.artist) $('inputSongArtist').value = tags.artist.slice(0, 80);
+    if (tags.cover && !songCover) {
+      try { setSongCover(await compressImage(tags.cover, 320, 0.82)); } catch (e) {}
+    }
     try {
       songFile = await blobToDataURL(file);
     } catch (e) {
       showError($('songError'), 'No pude leer ese archivo de audio.');
+    }
+  });
+
+  $('fileSongCover').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      setSongCover(await compressImage(file, 320, 0.82));
+    } catch (e) {
+      showError($('songError'), 'No pude abrir esa imagen.');
     }
   });
 
@@ -3957,11 +4128,14 @@ document.addEventListener('DOMContentLoaded', () => {
     button.disabled = true;
     button.textContent = 'Subiendo…';
     try {
-      await Cloud.addSong(title, value);
+      await Cloud.addSong({ title, artist: $('inputSongArtist').value.trim(), cover: songCover, value });
       toast(`«${title}» ya está en el jardín`);
       $('inputSongTitle').value = '';
+      $('inputSongArtist').value = '';
       $('inputSongUrl').value = '';
       $('fileSong').value = '';
+      $('fileSongCover').value = '';
+      setSongCover('');
       songFile = '';
     } catch (e) {
       console.error('No se pudo agregar la canción', e);

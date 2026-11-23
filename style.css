@@ -1474,6 +1474,58 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
 .color-preset[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
 .field-label small { font-weight: 400; color: var(--ink-soft); }
 
+.cover-row { display: flex; align-items: center; gap: 12px; }
+.cover-preview { width: 56px; height: 56px; object-fit: cover; border: 2.5px solid var(--ink); border-radius: 10px; }
+
+/* ================= MINI REPRODUCTOR ================= */
+.now-playing {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--dock-space) + 10px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(92vw, 380px);
+  padding: 7px 8px 7px 7px;
+  background: #fff6e2;
+  border: 2.5px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 3px 0 var(--ink);
+  translate: -50% 0;
+  transition: opacity 0.3s ease, translate 0.35s var(--ease-out);
+}
+.now-playing[hidden] { display: flex; opacity: 0; translate: -50% 20px; pointer-events: none; }
+.now-playing__cover {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  background: #ffe2a8;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+}
+.now-playing.is-playing .now-playing__cover { animation: coverBob 1.6s ease-in-out infinite alternate; }
+@keyframes coverBob { from { rotate: -3deg; } to { rotate: 3deg; } }
+.now-playing__text { flex: 1; min-width: 0; line-height: 1.2; }
+.now-playing__text strong, .now-playing__text small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.now-playing__text strong { font-size: 15px; color: var(--ink); }
+.now-playing__text small { font-size: 13px; color: var(--ink-soft); }
+.now-playing button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--ink);
+  background: #ffe2a8;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.now-playing button svg { width: 18px; height: 18px; }
+
 /* La canción de Spotify dentro de la cartica */
 .spotify-box { margin-top: 18px; }
 .spotify-box iframe {
