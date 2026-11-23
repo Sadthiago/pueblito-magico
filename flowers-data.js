@@ -5,7 +5,7 @@
  */
 
 const STORAGE_KEY = 'jardin_magico_flores_v1';
-const FLOWER_TYPES = ['astromelia', 'sunflower', 'rose', 'tulip', 'daisy', 'wildflower'];
+const FLOWER_TYPES = ['astromelia', 'sunflower', 'rose', 'tulip', 'daisy', 'wildflower', 'ramo'];
 const MELODY_NAMES = {
   casita: 'Piano de la casita',
   cajita: 'Cajita de música',
@@ -104,18 +104,38 @@ const Media = {
     return 'idb:' + key;
   },
 
+  // Guarda aquí un archivo que llegó de la nube, para no volver a bajarlo.
+  async cache(ref, blob) {
+    await this._tx('readwrite', (store) => store.put(blob, ref));
+  },
+
+  isStored(ref) {
+    return typeof ref === 'string' && (ref.startsWith('idb:') || ref.startsWith('nube:'));
+  },
+
+  // "idb:" vive solo en este teléfono; "nube:" se baja de Firebase la primera vez.
+  async _blob(ref) {
+    if (ref.startsWith('idb:')) return this._tx('readonly', (store) => store.get(ref.slice(4)));
+    let blob = await this._tx('readonly', (store) => store.get(ref)).catch(() => null);
+    if (!blob && typeof Cloud !== 'undefined') {
+      blob = await Cloud.fetchFile(ref);
+      if (blob) await this.cache(ref, blob).catch(() => {});
+    }
+    return blob || null;
+  },
+
   async remove(ref) {
-    if (!ref || !ref.startsWith('idb:')) return;
-    await this._tx('readwrite', (store) => store.delete(ref.slice(4)));
+    if (!this.isStored(ref)) return;
+    await this._tx('readwrite', (store) => store.delete(ref.startsWith('idb:') ? ref.slice(4) : ref));
     if (this._urls.has(ref)) URL.revokeObjectURL(this._urls.get(ref));
     this._urls.delete(ref);
   },
 
   // Dirección utilizable en <img> o <audio>. Vacía si el archivo ya no existe.
   async url(ref) {
-    if (!ref || !ref.startsWith('idb:')) return ref || '';
+    if (!this.isStored(ref)) return ref || '';
     if (this._urls.has(ref)) return this._urls.get(ref);
-    const blob = await this._tx('readonly', (store) => store.get(ref.slice(4)));
+    const blob = await this._blob(ref);
     if (!blob) return '';
     const url = URL.createObjectURL(blob);
     this._urls.set(ref, url);
@@ -123,8 +143,8 @@ const Media = {
   },
 
   async dataURL(ref) {
-    if (!ref || !ref.startsWith('idb:')) return ref || '';
-    const blob = await this._tx('readonly', (store) => store.get(ref.slice(4)));
+    if (!this.isStored(ref)) return ref || '';
+    const blob = await this._blob(ref);
     return blob ? blobToDataURL(blob) : '';
   }
 };
@@ -133,13 +153,13 @@ const Media = {
 // Todo lo que llega por QR o por archivo pasa por aquí antes de tocar la página.
 function safePhoto(value) {
   if (typeof value !== 'string') return '';
-  return /^(https?:\/\/|idb:[a-z0-9]+$|data:image\/(png|jpe?g|webp|gif|svg\+xml)[;,])/i.test(value) ? value : '';
+  return /^(https?:\/\/|(idb|nube):[a-z0-9]+$|data:image\/(png|jpe?g|webp|gif|svg\+xml)[;,])/i.test(value) ? value : '';
 }
 
 function safeMusic(value) {
   if (typeof value !== 'string') return '';
   if (MELODY_NAMES[value]) return value;
-  return /^(https?:\/\/|idb:[a-z0-9]+$|data:audio\/[a-z0-9.+-]+[;,])/i.test(value) ? value : '';
+  return /^(https?:\/\/|(idb|nube):[a-z0-9]+$|data:audio\/[a-z0-9.+-]+[;,])/i.test(value) ? value : '';
 }
 
 function normalizeFlower(raw) {
@@ -160,7 +180,11 @@ function normalizeFlower(raw) {
     music: safeMusic(raw.music),
     waterLevel: Math.min(100, Math.max(0, number(raw.waterLevel) ?? 100)),
     plantedAt: number(raw.plantedAt) ?? Date.now(),
-    lastWatered: number(raw.lastWatered)
+    lastWatered: number(raw.lastWatered),
+    // Creada en el panel pero aún sin escanear: no se ve hasta que brote con su QR.
+    porSembrar: raw.porSembrar === true,
+    // Último cambio hecho en un dispositivo; en la nube gana el más reciente.
+    editadoEn: number(raw.editadoEn) ?? 0
   };
 }
 
@@ -205,6 +229,25 @@ const FlowerStore = {
     return this.getAll().find((flower) => flower.id === id) || null;
   },
 
+  // Las que se ven en el jardín, en el orden en que brotaron (igual en todos los dispositivos).
+  planted() {
+    return this.getAll().filter((flower) => !flower.porSembrar).sort((a, b) => a.plantedAt - b.plantedAt);
+  },
+
+  // Avisa a la nube de un cambio hecho en este dispositivo.
+  _changed() {
+    if (typeof Cloud !== 'undefined' && Cloud.user) Cloud.sync();
+  },
+
+  // Cambia fotos y canciones por su copia en la nube, sin contarlo como un cambio nuevo.
+  replaceMedia(id, swaps) {
+    const list = this.getAll();
+    const flower = list.find((item) => item.id === id);
+    if (!flower) return;
+    Object.assign(flower, swaps);
+    this.saveAll(list);
+  },
+
   // Saca las fotos y melodías pesadas del objeto y las guarda en IndexedDB.
   async _ingest(flower) {
     for (const field of ['realPhoto', 'couplePhoto', 'music']) {
@@ -225,20 +268,28 @@ const FlowerStore = {
     const flower = await this._ingest(normalizeFlower(rawFlower));
     const list = this.getAll();
     const index = list.findIndex((item) => item.id === flower.id);
+    const now = Date.now();
     if (index >= 0) {
-      const { waterLevel, plantedAt, lastWatered } = list[index];
-      list[index] = { ...flower, waterLevel, plantedAt, lastWatered };
+      const old = list[index];
+      // La que esperaba su QR brota ahora: su vida empieza en este momento.
+      list[index] = old.porSembrar && !flower.porSembrar
+        ? { ...flower, waterLevel: 100, plantedAt: now, lastWatered: null, editadoEn: now }
+        : { ...flower, waterLevel: old.waterLevel, plantedAt: old.plantedAt, lastWatered: old.lastWatered, editadoEn: now };
     } else {
-      list.push({ ...flower, waterLevel: 100, plantedAt: Date.now() });
+      list.push({ ...flower, waterLevel: 100, plantedAt: now, editadoEn: now });
     }
-    return this.saveAll(list) ? list[index >= 0 ? index : list.length - 1] : null;
+    if (!this.saveAll(list)) return null;
+    this._changed();
+    return list[index >= 0 ? index : list.length - 1];
   },
 
   async remove(id) {
     const list = this.getAll();
     const flower = list.find((item) => item.id === id);
     if (!flower) return;
-    this.saveAll(list.filter((item) => item.id !== id));
+    // Primero en la nube: si no, la sincronización la traería de vuelta mientras tanto.
+    if (typeof Cloud !== 'undefined') await Cloud.removeFlower(flower).catch((e) => console.error('No pude quitarla de la nube', e));
+    this.saveAll(this.getAll().filter((item) => item.id !== id));
     await Promise.all([flower.realPhoto, flower.couplePhoto, flower.music].map((ref) => Media.remove(ref).catch(() => {})));
   },
 
@@ -247,19 +298,23 @@ const FlowerStore = {
     const flower = list.find((item) => item.id === id);
     if (flower) {
       flower.waterLevel = 100;
-      flower.lastWatered = Date.now();
+      flower.lastWatered = flower.editadoEn = Date.now();
       this.saveAll(list);
+      this._changed();
     }
     return flower;
   },
 
   waterAll() {
     const list = this.getAll();
+    const now = Date.now();
     list.forEach((flower) => {
+      if (flower.porSembrar) return;
       flower.waterLevel = 100;
-      flower.lastWatered = Date.now();
+      flower.lastWatered = flower.editadoEn = now;
     });
     this.saveAll(list);
+    this._changed();
     return list;
   },
 
@@ -319,6 +374,10 @@ const FlowerStore = {
 
   async fetchPackagedFlower(id, baseUrl = '') {
     if (!/^[\w-]{1,64}$/.test(id)) return null;
+    if (typeof Cloud !== 'undefined' && Cloud.user) {
+      const flower = this.get(id) || await Cloud.getFlower(id);
+      if (flower) return flower;
+    }
     const response = await fetch(`${baseUrl}flores/${id}.json`, { cache: 'no-cache' });
     if (!response.ok) return null;
     const data = await response.json();

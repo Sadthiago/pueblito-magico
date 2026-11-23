@@ -125,25 +125,68 @@ function seedDots(count, radius) {
   return d;
 }
 
-const BLOSSOMS = {
-  astromelia(p, random, id) {
-    // Un solo tallo que se abre en un ramito, como la astromelia de verdad
-    let streaks = '';
-    [60, 300].forEach((center) => {
-      [-16, -8, 0, 8, 16].forEach((spread, i) => {
-        const angle = ((center + spread) * Math.PI) / 180;
-        const outer = 19 - Math.abs(i - 2) * 2;
-        streaks += `M${f1(Math.sin(angle) * 8)},${f1(-Math.cos(angle) * 8)}L${f1(Math.sin(angle) * outer)},${f1(-Math.cos(angle) * outer)}`;
-      });
+// Una flor de astromelia: seis pétalos con sus rayitas y los estambres curvos.
+function astromeliaDef(p, random, id) {
+  let streaks = '';
+  [60, 300].forEach((center) => {
+    [-16, -8, 0, 8, 16].forEach((spread, i) => {
+      const angle = ((center + spread) * Math.PI) / 180;
+      const outer = 19 - Math.abs(i - 2) * 2;
+      streaks += `M${f1(Math.sin(angle) * 8)},${f1(-Math.cos(angle) * 8)}L${f1(Math.sin(angle) * outer)},${f1(-Math.cos(angle) * outer)}`;
     });
-    const blossom = (x, y, rotation, scale) => `<use href="#${id}f" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 18)}) scale(${scale})"/>`;
-    return `<defs>
-      <g id="${id}f"><path fill="${p.base}" ${OUTLINE} d="${petalRing(3, 'tepal', 33, 13.5, random)}"/>
+  });
+  return `<g id="${id}f"><path fill="${p.base}" ${OUTLINE} d="${petalRing(3, 'tepal', 33, 13.5, random)}"/>
       <path fill="${p.tip}" ${OUTLINE} d="${petalRing(3, 'tepal', 30, 10.5, random, { offset: 60 })}"/>
       <path fill="none" stroke="${p.core}" stroke-width="1" stroke-linecap="round" d="${streaks}"/>
       <circle r="4.5" fill="${p.core}" ${OUTLINE}/>
       <path fill="none" stroke="#f3e2a6" stroke-width=".9" stroke-linecap="round" d="M0,1Q-3,8 -6,14M0,1Q-1,9 -1,16M0,1Q2,9 4,15M0,1Q4,6 8,11"/>
-      <path fill="none" stroke="#7a4a1a" stroke-width="2" stroke-linecap="round" d="M-6,14h.01M-1,16h.01M4,15h.01M8,11h.01"/></g></defs>
+      <path fill="none" stroke="#7a4a1a" stroke-width="2" stroke-linecap="round" d="M-6,14h.01M-1,16h.01M4,15h.01M8,11h.01"/></g>`;
+}
+
+// El ramo de astromelias amarillas envuelto en papel blanco con rayas doradas, moño rojo
+// y su globito dorado de corazón, como el de la foto.
+function bouquetSVG(p, random, id, { head = false, sprouting = false } = {}) {
+  const blossom = (x, y, rotation, scale) => `<use href="#${id}f" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 20)}) scale(${scale})"/>`;
+  const balloon = `<g class="ramo-balloon">
+      <path fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round" d="M84,56 C82,72 72,88 64,112"/>
+      <g transform="translate(86,30) rotate(-10) scale(1.15)" stroke="${INK}" stroke-width="2" stroke-linejoin="round">
+        <path fill="#f4c542" d="M0,20 C-22,6 -26,-12 -14,-19 C-7,-23 -2,-19 0,-14 C2,-19 7,-23 14,-19 C26,-12 22,6 0,20 Z"/>
+        <path fill="#e0a52a" stroke="none" d="M0,20 C10,13 17,5 19,-3 C20,6 12,13 0,20 Z"/>
+        <path fill="none" stroke="#fff6c8" stroke-width="3" stroke-linecap="round" d="M-15,-9 C-14,-14 -10,-16 -7,-15"/>
+        <path fill="#e0a52a" d="M-2,20 L2,20 L1.4,24 L-1.4,24 Z"/>
+      </g>
+    </g>`;
+  const leaves = `<g class="flower-leaves" fill="${STEM}" ${OUTLINE}>${leaf(40, 106, 215, 34, 8)}${leaf(80, 106, -35, 34, 8)}${leaf(32, 98, 240, 30, 7)}${leaf(88, 98, -60, 30, 7)}${leaf(60, 92, 272, 26, 6)}${leaf(26, 124, 192, 26, 6)}${leaf(94, 124, -12, 26, 6)}</g>`;
+  const flowers = `${blossom(60, 92, 0, 0.6)}${blossom(40, 101, -35, 0.56)}${blossom(80, 101, 35, 0.56)}${blossom(25, 117, -55, 0.48)}${blossom(95, 117, 55, 0.48)}${blossom(48, 114, -10, 0.6)}${blossom(72, 114, 12, 0.6)}${blossom(60, 125, 180, 0.55)}${blossom(34, 129, -40, 0.48)}${blossom(86, 129, 40, 0.48)}`;
+  const paperBack = `<path fill="#fffaf0" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" d="M24,132 C20,118 26,104 32,100 C36,112 42,120 50,126 L70,126 C78,120 84,112 88,100 C94,104 100,118 96,132 Z"/>`;
+  const paperFront = `<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round">
+      <path fill="#fffaf0" d="M26,132 C34,128 42,136 50,131 C56,136 64,136 70,131 C78,136 86,128 94,132 L84,206 C76,212 44,212 36,206 Z"/>
+      <path fill="none" stroke="#e0b04a" stroke-width="3" stroke-linecap="round" d="M30,148 C44,142 54,154 66,148 C76,143 84,148 91,146 M33,166 C46,160 56,172 68,166 C78,161 84,166 89,164 M36,188 C48,182 58,194 70,188 C78,184 82,188 86,186"/>
+      <path fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2.4" stroke-linecap="round" d="M36,140 C35,156 37,176 40,196"/>
+      <path fill="#e8413c" d="M37,170 C52,174 68,174 83,170 L82,178 C68,182 52,182 38,178 Z"/>
+      <path fill="#e8413c" d="M60,175 C50,164 38,164 40,172 C41,180 52,180 60,175 Z"/>
+      <path fill="#e8413c" d="M60,175 C70,164 82,164 80,172 C79,180 68,180 60,175 Z"/>
+      <path fill="#e8413c" d="M58,176 L50,198 L55,196 L57,201 Z M62,176 L70,198 L65,196 L63,201 Z"/>
+      <circle cx="60" cy="175" r="3.6" fill="#c92f2b"/>
+    </g>`;
+  const defs = `<defs>${astromeliaDef(p, random, id)}</defs>`;
+  if (head) {
+    return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="6 4 108 136">${defs}${balloon}${paperBack}${leaves}${flowers}</svg>`;
+  }
+  return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">${defs}
+    <ellipse cx="60" cy="214" rx="34" ry="5.5" fill="#1f5a2a" opacity=".22"/>
+    <g class="stem-container ${sprouting ? 'sprouting-stem' : ''}">${paperBack}${paperFront}</g>
+    <g class="flower-blossom ${sprouting ? 'sprouting-head' : ''}">${leaves}${flowers}${balloon}</g>
+    <path fill="none" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" d="M26,132 C34,128 42,136 50,131 C56,136 64,136 70,131 C78,136 86,128 94,132"/>
+  </svg>`;
+}
+
+const BLOSSOMS = {
+  astromelia(p, random, id) {
+    // Un solo tallo que se abre en un ramito, como la astromelia de verdad
+    const blossom = (x, y, rotation, scale) => `<use href="#${id}f" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 18)}) scale(${scale})"/>`;
+    return `<defs>
+      ${astromeliaDef(p, random, id)}</defs>
       <g class="flower-leaves" fill="${STEM}" ${OUTLINE}>${leaf(-16, 24, 158, 34, 7)}${leaf(16, 26, 22, 34, 7)}</g>
       <path fill="none" stroke="${INK}" stroke-width="5.4" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
       <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2.2" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
@@ -237,6 +280,7 @@ function createFlowerSVG(type, color = '#e3ae2b', { seed = 1, sprouting = false,
   const tilt = (random() - 0.5) * 10;
   const side = random() > 0.5 ? 1 : -1;
   const id = `fl${++flowerUid}`;
+  if (type === 'ramo') return bouquetSVG(palette, random, id, { head, sprouting });
   const blossom = (BLOSSOMS[type] || BLOSSOMS.wildflower)(palette, random, id);
 
   if (head) {
@@ -305,7 +349,13 @@ function placeholderPhoto(flower, kind) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const $ = (id) => document.getElementById(id);
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // El jardín se mueve siempre, aunque Windows o el celular tengan las animaciones apagadas:
+  // quien lo quiera quieto lo apaga en Recuerdos > Animaciones del jardín.
+  const STILL_KEY = 'jardin_magico_quieto';
+  const reducedMotion = (() => {
+    try { return localStorage.getItem(STILL_KEY) === '1'; } catch (e) { return false; }
+  })();
+  document.documentElement.classList.toggle('is-still', reducedMotion);
 
   const scene = $('scene');
   const meadow = $('meadow');
@@ -423,7 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
       canvas._confetti = canvas._confetti || window.confetti.create(canvas, { resize: true, useWorker: false });
       fire = canvas._confetti;
     }
-    fire({ disableForReducedMotion: true, zIndex: 150, shapes: ['circle'], scalar: 0.8, gravity: 0.7, ticks: 150, ...options });
+    if (reducedMotion) return;
+    fire({ zIndex: 150, shapes: ['circle'], scalar: 0.8, gravity: 0.7, ticks: 150, ...options });
   }
 
   // ================= SONIDO =================
@@ -704,16 +755,21 @@ document.addEventListener('DOMContentLoaded', () => {
       timer = setInterval(schedule, 150);
     }
 
+    let onStop = null;
+
     function stop() {
       clearInterval(timer);
       timer = null;
       Sound.fadeMusic(0, 0.9);
       audio.pause();
+      const was = current;
       current = '';
       updateUI();
+      if (was && onStop) onStop();
     }
 
-    async function play(spec) {
+    // loop: false para las canciones del jardín, que suenan una vez y paran.
+    async function play(spec, { loop = true, quiet = false } = {}) {
       Sound.ensure();
       clearInterval(timer);
       timer = null;
@@ -728,6 +784,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const url = await Media.url(spec);
         if (!url) throw new Error('sin archivo');
+        if (current !== spec) return false;
+        audio.loop = loop;
         audio.src = url;
         audio.volume = 0.65;
         await audio.play();
@@ -736,12 +794,36 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('No se pudo reproducir la melodía', e);
         current = '';
         updateUI();
-        toast('No pude abrir esa canción. Revisa el archivo o el enlace.');
+        if (!quiet) toast('No pude abrir esa canción. Revisa el archivo o el enlace.');
         return false;
       }
     }
 
+    audio.addEventListener('ended', () => {
+      if (!audio.loop) stop();
+    });
+
+    // Safari solo deja sonar un audio sin tocar la pantalla si ya sonó una vez con un toque:
+    // el primer toque reproduce un silencio cortito y lo deja listo.
+    let unlocked = false;
+    function unlock() {
+      if (unlocked || current) return;
+      unlocked = true;
+      const bytes = new Uint8Array(44 + 400);
+      const view = new DataView(bytes.buffer);
+      const write = (at, text) => [...text].forEach((c, i) => { bytes[at + i] = c.charCodeAt(0); });
+      write(0, 'RIFF'); view.setUint32(4, 36 + 400, true); write(8, 'WAVEfmt ');
+      view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+      view.setUint32(24, 8000, true); view.setUint32(28, 8000, true); view.setUint16(32, 1, true); view.setUint16(34, 8, true);
+      write(36, 'data'); view.setUint32(40, 400, true); bytes.fill(128, 44);
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+      audio.src = url;
+      audio.play().then(() => { if (!current) audio.pause(); }).catch(() => {}).finally(() => URL.revokeObjectURL(url));
+    }
+
     function updateUI() {
+      // Las mascoticas bailan mientras suena música.
+      $('petsLayer').classList.toggle('is-dancing', Boolean(current));
       $('btnMusic').setAttribute('aria-pressed', String(Boolean(current)));
       const flower = state.activeFlower;
       if (flower && flower.music) {
@@ -756,7 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    return { play, stop, updateUI, get current() { return current; } };
+    return {
+      play, stop, updateUI, unlock,
+      get current() { return current; },
+      set onStop(fn) { onStop = fn; }
+    };
   })();
 
   $('btnMusic').addEventListener('click', () => {
@@ -771,33 +857,125 @@ document.addEventListener('DOMContentLoaded', () => {
     else Music.play(flower.music);
   });
 
+  // ================= CANCIONES DEL JARDÍN =================
+  // Las canciones que Santiago sube en el panel suenan solas cada cierto tiempo
+  // mientras el jardín está abierto. Cada dispositivo elige cada cuánto (o nunca).
+  const Radio = (() => {
+    const EVERY_KEY = 'jardin_magico_radio';
+    const LIST_KEY = 'jardin_magico_canciones';
+    let minutes = 10;
+    let songs = [];
+    let quietSince = Date.now();
+    let lastId = '';
+    let playingSong = null;
+    try {
+      const saved = localStorage.getItem(EVERY_KEY);
+      if (saved !== null) minutes = Number(saved) || 0;
+      songs = JSON.parse(localStorage.getItem(LIST_KEY) || '[]');
+    } catch (e) {}
+
+    const playable = () => songs.filter((song) => safeMusic(song.ref));
+
+    async function playOne({ auto }) {
+      const pool = playable();
+      if (!pool.length) {
+        if (!auto) toast('Todavía no hay canciones. Santiago las agrega desde el panel.');
+        return false;
+      }
+      const choices = pool.length > 1 ? pool.filter((song) => song.id !== lastId) : pool;
+      const song = choices[Math.floor(Math.random() * choices.length)];
+      lastId = song.id;
+      playingSong = song;
+      const ok = await Music.play(song.ref, { loop: false, quiet: auto });
+      if (ok) toast(`Sonando: ${song.title}`);
+      else playingSong = null;
+      return ok;
+    }
+
+    // Cuando para cualquier música, el reloj vuelve a empezar.
+    Music.onStop = () => {
+      playingSong = null;
+      quietSince = Date.now();
+    };
+
+    setInterval(() => {
+      if (!minutes || document.hidden || Music.current || document.querySelector('dialog[open]')) return;
+      if (Date.now() - quietSince < minutes * 60000) return;
+      quietSince = Date.now();
+      playOne({ auto: true });
+    }, 15000);
+
+    // Safari necesita un primer toque para dejar sonar audio después.
+    document.addEventListener('pointerdown', () => Music.unlock(), { once: true, capture: true });
+
+    return {
+      playOne,
+      get minutes() { return minutes; },
+      setMinutes(value) {
+        minutes = Number(value) || 0;
+        quietSince = Date.now();
+        try { localStorage.setItem(EVERY_KEY, String(minutes)); } catch (e) {}
+      },
+      get songs() { return songs; },
+      setSongs(list) {
+        songs = list;
+        try { localStorage.setItem(LIST_KEY, JSON.stringify(list)); } catch (e) {}
+      },
+      get playing() { return playingSong; }
+    };
+  })();
+
   // ================= 1. CICLO DÍA / TARDE / NOCHE =================
   const celestialOrbit = $('celestialOrbit');
   const timeAngles = { day: 0, sunset: 55, night: 180 };
   const skyThemeColor = { day: '#6db5f5', sunset: '#4c2a85', night: '#070b1e' };
   const TIME_BUTTON = { day: ['sun', 'Día'], sunset: ['sunset', 'Tarde'], night: ['moon', 'Noche'], auto: ['timer', 'Auto'] };
-  const CYCLE_SECONDS = 15;
+  // En "Auto" el cielo gira sin parar: el sol baja, llega la tarde, sale la luna y vuelve el día.
+  // Grados por segundo en cada parte del día: un día entero dura unos 5 minutos y medio.
+  const FLOW_SPEED = { day: 70 / 150, sunset: 90 / 60, night: 200 / 120 };
+  const FLOW_STEP_MS = 250;
+  const RESUME_AUTO_MS = 2 * 60 * 1000;
   let orbitAngle = 0;
-  let isAutoCycling = false;
+  let isAutoCycling = true;
   let autoCycleInterval = null;
+  let resumeAutoTimer = null;
 
-  function setTimeMode(mode, { nearest = false } = {}) {
+  function paintTime(mode) {
     state.time = mode;
     document.body.classList.remove('time-day', 'time-sunset', 'time-night');
     document.body.classList.add(`time-${mode}`);
+    Pets.refresh();
+    paintTimeButton();
+    document.querySelector('meta[name="theme-color"]').content = skyThemeColor[mode];
+    Ambient.redrawStatic();
+    Butterflies.refresh();
+  }
 
+  function setTimeMode(mode, { nearest = false } = {}) {
     // El sol siempre avanza hacia adelante, nunca retrocede por el cielo; si lo soltaste con el dedo, se acomoda donde quedó.
     let target = timeAngles[mode];
     if (nearest) target += Math.round((orbitAngle - target) / 360) * 360;
     else while (target < orbitAngle) target += 360;
     orbitAngle = target;
+    celestialOrbit.classList.remove('is-flowing');
     celestialOrbit.style.setProperty('--orbit-angle', `${orbitAngle}deg`);
-    Pets.refresh();
+    paintTime(mode);
+  }
 
+  function flowStep() {
+    orbitAngle += FLOW_SPEED[state.time] * (FLOW_STEP_MS / 1000);
+    celestialOrbit.classList.add('is-flowing');
+    celestialOrbit.style.setProperty('--orbit-angle', `${orbitAngle.toFixed(2)}deg`);
+    const mode = modeForAngle(orbitAngle);
+    if (mode !== state.time) paintTime(mode);
+  }
+
+  function startAutoCycle() {
+    clearTimeout(resumeAutoTimer);
+    clearInterval(autoCycleInterval);
+    isAutoCycling = true;
+    autoCycleInterval = setInterval(() => { if (!document.hidden) flowStep(); }, FLOW_STEP_MS);
     paintTimeButton();
-    document.querySelector('meta[name="theme-color"]').content = skyThemeColor[mode];
-    Ambient.redrawStatic();
-    Butterflies.refresh();
   }
 
   function paintTimeButton() {
@@ -807,12 +985,17 @@ document.addEventListener('DOMContentLoaded', () => {
     $('btnTime').setAttribute('aria-label', `Hora del día: ${label}. Toca para cambiarla.`);
   }
 
+  // Si alguien escoge la hora a mano, el tiempo vuelve a correr solo a los dos minutos.
   function stopAutoCycle() {
     isAutoCycling = false;
     clearInterval(autoCycleInterval);
+    clearTimeout(resumeAutoTimer);
+    resumeAutoTimer = setTimeout(startAutoCycle, RESUME_AUTO_MS);
+    celestialOrbit.classList.remove('is-flowing');
+    paintTimeButton();
   }
 
-  // Día, tarde, noche y luego "Auto", donde el tiempo pasa solo.
+  // "Auto" (el tiempo pasa solo), y si se toca: día, tarde, noche y de vuelta a "Auto".
   $('btnTime').addEventListener('click', () => {
     if (isAutoCycling) {
       stopAutoCycle();
@@ -820,15 +1003,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (state.time === 'night') {
-      isAutoCycling = true;
-      const modes = ['day', 'sunset', 'night'];
-      autoCycleInterval = setInterval(() => {
-        setTimeMode(modes[(modes.indexOf(state.time) + 1) % modes.length]);
-      }, CYCLE_SECONDS * 1000);
-      paintTimeButton();
+      startAutoCycle();
       return;
     }
     setTimeMode(state.time === 'day' ? 'sunset' : 'night');
+    stopAutoCycle();
   });
 
   // El sol y la luna se agarran: arrastrarlos por el cielo cambia la hora, y un toque los hace rebotar.
@@ -873,6 +1052,7 @@ document.addEventListener('DOMContentLoaded', () => {
       body.classList.add('is-squish');
       Sound.tinkle();
       if (moved) {
+        stopAutoCycle();
         setTimeMode(modeForAngle(orbitAngle), { nearest: true });
       } else {
         stopAutoCycle();
@@ -1334,7 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderGarden(newlyPlantedId = null) {
-    const flowers = FlowerStore.getAll();
+    const flowers = FlowerStore.planted();
     if (nearWatcher) nearWatcher.disconnect();
     flowersContainer.innerHTML = '';
     gardenColumns = columnsForWidth();
@@ -1465,7 +1645,8 @@ document.addEventListener('DOMContentLoaded', () => {
     rose: 'Rosa eterna',
     tulip: 'Tulipán elegante',
     daisy: 'Margarita silvestre',
-    wildflower: 'Flor de la casita'
+    wildflower: 'Flor de la casita',
+    ramo: 'Ramo de astromelias con globito'
   };
 
   function setPolaroid(image, ref, flower, kind) {
@@ -1757,27 +1938,64 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnExportPDF').addEventListener('click', (event) => exportMemory(event.currentTarget, 'pdf'));
 
   // ================= 8. CEREMONIA DE BROTE =================
+  // Llega como una cartica: el sobre se abre, a la izquierda queda la foto y a la derecha la semillita.
   function handleQRScan(flower) {
     const stage = $('sproutAnimationStage');
     const finish = $('btnFinishSprout');
+    const ceremony = $('ceremony');
+    const envelope = $('ceremonyEnvelope');
     let started = false;
+    let opened = false;
+    let autoStart = null;
 
+    ceremony.dataset.step = 'closed';
     stage.dataset.phase = 'seed';
     stage.disabled = false;
+    stage.querySelector('.sprout-seedling').style.opacity = '';
     $('sproutFlower').innerHTML = '';
-    $('sproutTitle').textContent = 'Llegó una semillita';
-    $('sproutSubtitle').textContent = 'Toca la tierra para plantarla.';
+    $('sproutTitle').textContent = 'Llegó una cartica';
+    $('sproutSubtitle').textContent = 'Tócala para abrirla.';
     finish.hidden = true;
+
+    const photo = $('ceremonyPhoto');
+    const photoRef = flower.realPhoto || flower.couplePhoto;
+    photo.src = placeholderPhoto(flower, 'real');
+    if (photoRef) Media.url(photoRef).then((url) => { if (url) photo.src = url; }).catch(() => {});
+    $('ceremonyCaption').textContent = flower.title;
+    $('ceremonyDate').textContent = formatDate(flower.date);
     openSheet(sproutModal);
 
-    const begin = (touched) => {
-      if (started) return;
-      started = true;
-      clearTimeout(autoStart);
+    const playMusic = () => {
+      if (flower.music && Music.current !== flower.music) Music.play(flower.music);
+    };
+
+    const open = (touched) => {
+      if (opened) return;
+      opened = true;
+      clearTimeout(autoOpen);
       // El navegador solo deja sonar el audio después de un toque.
       if (touched) {
         Sound.tinkle();
-        if (flower.music) Music.play(flower.music);
+        playMusic();
+      }
+      ceremony.dataset.step = 'opening';
+      setTimeout(() => {
+        ceremony.dataset.step = 'open';
+        $('sproutTitle').textContent = 'Para ti';
+        $('sproutSubtitle').textContent = 'Toca la semillita para plantarla.';
+        autoStart = setTimeout(() => begin(false), 9000);
+      }, reducedMotion ? 0 : 700);
+    };
+    const autoOpen = setTimeout(() => open(false), 6000);
+    envelope.onclick = () => open(true);
+
+    const begin = (touched) => {
+      if (started || !opened) return;
+      started = true;
+      clearTimeout(autoStart);
+      if (touched) {
+        Sound.tinkle();
+        playMusic();
       }
       stage.dataset.phase = 'sprout';
       stage.setAttribute('aria-label', 'La semilla está brotando');
@@ -1800,7 +2018,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 3100);
     };
 
-    const autoStart = setTimeout(() => begin(false), 6000);
     stage.onclick = () => begin(true);
 
     finish.onclick = async () => {
@@ -1820,8 +2037,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function receiveFlower(flower) {
-    const alreadyPlanted = Boolean(FlowerStore.get(flower.id));
-    const saved = await FlowerStore.add(flower);
+    const existing = FlowerStore.get(flower.id);
+    const alreadyPlanted = Boolean(existing && !existing.porSembrar);
+    const saved = await FlowerStore.add({ ...flower, porSembrar: false });
     if (!saved) {
       toast('Tu teléfono no tiene espacio para guardar esta flor. Libera un poquito e inténtalo otra vez.');
       return;
@@ -2220,6 +2438,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let running = false;
     let last = 0;
 
+    // ---------- Dónde queda cada cosa ----------
+    // La casita es un SVG de 720×700; sus puntos se pasan a coordenadas de la pradera.
+    const HOUSE_SPOTS = {
+      door: [360, 690],
+      left: [216, 470],
+      right: [504, 470],
+      attic: [360, 262]
+    };
+    const WINDOW_KEYS = ['left', 'right', 'attic'];
+
+    function housePoint(key) {
+      const cottage = document.querySelector('.cottage');
+      if (!cottage) return null;
+      const house = cottage.getBoundingClientRect();
+      const field = meadow.getBoundingClientRect();
+      const [sx, sy] = HOUSE_SPOTS[key];
+      return {
+        x: house.left - field.left + (sx / 720) * house.width,
+        y: house.top - field.top + (sy / 700) * house.height,
+        scale: Math.max(0.35, Math.min(1, house.width / 720 * 1.15))
+      };
+    }
+
     function bounds() {
       const box = meadow.getBoundingClientRect();
       const width = meadow.clientWidth;
@@ -2230,17 +2471,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return { left: width * 0.08, right: width * 0.92, top, bottom: Math.max(top + 60, bottom) };
     }
 
-    function pickSpot(pet) {
-      const b = bounds();
-      pet.tx = b.left + Math.random() * (b.right - b.left);
-      pet.ty = b.top + Math.random() * (b.bottom - b.top);
-      pet.walking = true;
-      pet.el.classList.add('is-walking');
+    function meadowPoint(event) {
+      const field = meadow.getBoundingClientRect();
+      return { x: event.clientX - field.left, y: event.clientY - field.top };
     }
 
+    // ---------- Piezas pequeñas ----------
     function place(pet) {
-      pet.el.style.transform = `translate3d(${pet.x.toFixed(1)}px,${pet.y.toFixed(1)}px,0)`;
-      pet.el.style.zIndex = String(Math.round(pet.y));
+      const scale = pet.scale ?? 1;
+      pet.el.style.transform = `translate3d(${pet.x.toFixed(1)}px,${pet.y.toFixed(1)}px,0)${scale !== 1 ? ` scale(${scale.toFixed(3)})` : ''}`;
+      pet.el.style.zIndex = String(Math.round(pet.y) + (pet.mode === 'held' ? 5000 : 1000));
     }
 
     function flash(pet, className, ms) {
@@ -2249,75 +2489,427 @@ document.addEventListener('DOMContentLoaded', () => {
       pet[className] = setTimeout(() => pet.el.classList.remove(className), ms);
     }
 
-    function think(pet) {
-      const like = pet.def.likes[Math.floor(Math.random() * pet.def.likes.length)];
-      pet.el.querySelector('.pet-bubble').innerHTML = BUBBLES[like];
+    function think(pet, like) {
+      const pick = like || pet.def.likes[Math.floor(Math.random() * pet.def.likes.length)];
+      pet.el.querySelector('.pet-bubble').innerHTML = BUBBLES[pick];
       flash(pet, 'show-bubble', 2200);
     }
 
+    function hop(pet) {
+      pet.el.classList.remove('is-hop');
+      void pet.el.offsetWidth;
+      flash(pet, 'is-hop', 700);
+    }
+
+    function setFace(pet, face) {
+      if (face === pet.face) return;
+      pet.face = face;
+      pet.el.style.setProperty('--face', face);
+    }
+
+    function setMode(pet, mode) {
+      pet.mode = mode;
+      pet.el.classList.toggle('is-walking', mode === 'walk');
+      pet.el.classList.toggle('is-sitting', mode === 'sit');
+      pet.el.classList.toggle('is-held', mode === 'held');
+      pet.el.classList.toggle('is-inside', mode === 'inside');
+      pet.el.classList.toggle('is-peeking', mode === 'peek');
+    }
+
+    function idle(pet, rest = 1 + Math.random() * 3) {
+      pet.next = null;
+      pet.rest = rest;
+      pet.scale = 1;
+      setMode(pet, 'idle');
+      place(pet);
+    }
+
+    function walkTo(pet, x, y, next = null) {
+      pet.tx = x;
+      pet.ty = y;
+      pet.next = next;
+      // Con "reducir movimiento" no caminan: aparecen donde iban.
+      if (reducedMotion) {
+        if (Math.abs(x - pet.x) > 2) setFace(pet, x > pet.x ? 1 : -1);
+        pet.x = x;
+        pet.y = y;
+        place(pet);
+        arrive(pet);
+        return;
+      }
+      setMode(pet, 'walk');
+    }
+
+    // Se sienta mirando hacia algo: una flor, la casita o simplemente el jardín.
+    function sit(pet, seconds, lookAtX = null) {
+      pet.timer = seconds;
+      pet.nextThought = 4 + Math.random() * 6;
+      if (lookAtX !== null && Math.abs(lookAtX - pet.x) > 4) setFace(pet, lookAtX > pet.x ? 1 : -1);
+      setMode(pet, 'sit');
+    }
+
+    function outside() {
+      return crew.filter((pet) => !['inside', 'peek', 'jump'].includes(pet.mode));
+    }
+
+    // Una flor que se vea en pantalla, para ir a mirarla.
+    function visibleFlower() {
+      const b = bounds();
+      const field = meadow.getBoundingClientRect();
+      const options = [...flowersContainer.querySelectorAll('.flower-item')]
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { x: rect.left - field.left + rect.width / 2, y: rect.bottom - field.top };
+        })
+        .filter((spot) => spot.y > b.top && spot.y < b.bottom + 40);
+      return options[Math.floor(Math.random() * options.length)] || null;
+    }
+
+    // ---------- La casita ----------
+    function enterHouse(pet) {
+      const door = housePoint('door');
+      if (door) {
+        pet.x = door.x;
+        pet.y = door.y;
+      }
+      setMode(pet, 'entering');
+      pet.el.classList.add('is-entering');
+      place(pet);
+      Sound.tinkle();
+      setTimeout(() => {
+        pet.el.classList.remove('is-entering');
+        pet.timer = 8 + Math.random() * 18;
+        setMode(pet, 'inside');
+      }, reducedMotion ? 0 : 600);
+    }
+
+    function leaveByDoor(pet) {
+      const door = housePoint('door');
+      if (!door) return idle(pet);
+      pet.x = door.x;
+      pet.y = door.y;
+      pet.scale = 1;
+      setMode(pet, 'idle');
+      place(pet);
+      flash(pet, 'is-emerging', 650);
+      think(pet, 'heart');
+      const b = bounds();
+      // De noche sale, se queda en la puerta y se duerme ahí.
+      if (state.time === 'night') return idle(pet);
+      walkTo(pet, door.x + (Math.random() - 0.5) * 120, b.top + 20 + Math.random() * 60);
+    }
+
+    // Se asoma por una ventana y, al rato, salta al pasto.
+    function peek(pet, windowKey = WINDOW_KEYS[Math.floor(Math.random() * WINDOW_KEYS.length)]) {
+      const spot = housePoint(windowKey);
+      if (!spot) return leaveByDoor(pet);
+      pet.x = spot.x;
+      pet.y = spot.y;
+      pet.scale = spot.scale * (windowKey === 'attic' ? 0.85 : 1);
+      pet.timer = 3 + Math.random() * 3;
+      pet.window = windowKey;
+      setMode(pet, 'peek');
+      place(pet);
+      flash(pet, 'is-emerging', 650);
+      setTimeout(() => think(pet, 'heart'), 500);
+    }
+
+    function jump(pet, toX, toY) {
+      if (reducedMotion) {
+        pet.x = toX;
+        pet.y = toY;
+        idle(pet);
+        return;
+      }
+      pet.jump = { fromX: pet.x, fromY: pet.y, toX, toY, fromScale: pet.scale ?? 1, t: 0, length: reducedMotion ? 0.01 : 0.9 };
+      setMode(pet, 'jump');
+      setFace(pet, toX >= pet.x ? 1 : -1);
+      Sound.tinkle();
+    }
+
+    function jumpDown(pet) {
+      const b = bounds();
+      jump(pet, Math.min(b.right, Math.max(b.left, pet.x + (Math.random() - 0.5) * 140)), b.top + 10 + Math.random() * 50);
+    }
+
+    // ---------- Lo que deciden hacer solos ----------
+    function chooseNext(pet) {
+      const roll = Math.random();
+      const b = bounds();
+      const inside = crew.filter((other) => other.mode === 'inside').length;
+      if (roll < 0.4 && reducedMotion) {
+        sit(pet, 15 + Math.random() * 20);
+      } else if (roll < 0.4) {
+        walkTo(pet, b.left + Math.random() * (b.right - b.left), b.top + Math.random() * (b.bottom - b.top));
+      } else if (roll < 0.62) {
+        const flower = visibleFlower();
+        if (flower) walkTo(pet, flower.x + (Math.random() < 0.5 ? -1 : 1) * (26 + Math.random() * 14), flower.y + 6, 'watch');
+        else sit(pet, 10 + Math.random() * 15);
+      } else if (roll < 0.74 && inside < 2) {
+        const door = housePoint('door');
+        if (door) walkTo(pet, door.x, door.y, 'enter');
+      } else if (roll < 0.88) {
+        const friends = outside().filter((other) => other !== pet && other.mode !== 'held');
+        const friend = friends[Math.floor(Math.random() * friends.length)];
+        if (friend) {
+          pet.friend = friend;
+          walkTo(pet, friend.x + (pet.x < friend.x ? -1 : 1) * 46, friend.y + 4, 'greet');
+        } else sit(pet, 8 + Math.random() * 10);
+      } else {
+        sit(pet, 12 + Math.random() * 20);
+      }
+      if (Math.random() < 0.25) think(pet);
+    }
+
+    function arrive(pet) {
+      const next = pet.next;
+      pet.next = null;
+      if (next === 'enter') return enterHouse(pet);
+      if (next === 'watch') {
+        const flower = visibleFlower();
+        sit(pet, 15 + Math.random() * 20, flower ? flower.x : null);
+        think(pet, 'flower');
+        return;
+      }
+      if (next === 'greet' && pet.friend && outside().includes(pet.friend)) {
+        const friend = pet.friend;
+        setFace(pet, friend.x > pet.x ? 1 : -1);
+        if (friend.mode !== 'held') setFace(friend, pet.x > friend.x ? 1 : -1);
+        hop(pet);
+        setTimeout(() => hop(friend), 250);
+        think(pet, 'heart');
+        setTimeout(() => think(friend, 'heart'), 400);
+        sit(pet, 6 + Math.random() * 6, friend.x);
+        if (friend.mode === 'idle' || friend.mode === 'sit') sit(friend, 6 + Math.random() * 6, pet.x);
+        pet.friend = null;
+        return;
+      }
+      idle(pet, 2 + Math.random() * 5);
+    }
+
+    // ---------- Arrastrarlos con el dedo ----------
+    function enableDrag(pet) {
+      const el = pet.el;
+      let start = null;
+      el.addEventListener('pointerdown', (event) => {
+        if (['inside', 'entering', 'jump'].includes(pet.mode) || event.button > 0) return;
+        start = { x: event.clientX, y: event.clientY, id: event.pointerId };
+        pet.dragged = false;
+      });
+      // Se escucha en toda la ventana: si el dedo se mueve rápido, no lo suelta.
+      window.addEventListener('pointermove', (event) => {
+        if (!start || event.pointerId !== start.id) return;
+        if (pet.mode !== 'held') {
+          if (Math.hypot(event.clientX - start.x, event.clientY - start.y) < 8) return;
+          try { el.setPointerCapture(event.pointerId); } catch (e) {}
+          pet.dragged = true;
+          pet.scale = 1;
+          setMode(pet, 'held');
+          Sound.tinkle();
+          flash(pet, 'show-tag', 1800);
+        }
+        const point = meadowPoint(event);
+        pet.x = point.x;
+        // El dedo lo agarra de la barriguita, no de las patas.
+        pet.y = point.y + el.offsetHeight * 0.45;
+        place(pet);
+        event.preventDefault();
+      });
+      const release = (event) => {
+        if (!start || event.pointerId !== start.id) return;
+        start = null;
+        if (pet.mode !== 'held') return;
+        drop(pet);
+      };
+      window.addEventListener('pointerup', release);
+      window.addEventListener('pointercancel', release);
+    }
+
+    function drop(pet) {
+      const door = housePoint('door');
+      const b = bounds();
+      if (door && Math.hypot(pet.x - door.x, pet.y - door.y) < 55) {
+        walkTo(pet, door.x, door.y, 'enter');
+        return;
+      }
+      // Si lo sueltan en el cielo o en la casita, salta al pasto.
+      if (pet.y < b.top - 30) {
+        jumpDown(pet);
+        return;
+      }
+      hop(pet);
+      const flower = visibleFlower();
+      sit(pet, 25 + Math.random() * 20, flower ? flower.x : null);
+      if (state.time !== 'night') think(pet, 'flower');
+      place(pet);
+    }
+
+    // ---------- Tocar la puerta y las ventanas ----------
+    function makeHouseButtons() {
+      const spots = [
+        { key: 'door', label: 'La puerta de la casita', w: 100, h: 138, dy: -69 },
+        { key: 'left', label: 'La ventana de la izquierda', w: 80, h: 86, dy: -43 },
+        { key: 'right', label: 'La ventana de la derecha', w: 80, h: 86, dy: -43 },
+        { key: 'attic', label: 'La ventanita del ático', w: 80, h: 80, dy: -38 }
+      ];
+      spots.forEach((spot) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'house-hit';
+        button.setAttribute('aria-label', spot.label);
+        button.dataset.key = spot.key;
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          tapHouse(spot.key);
+        });
+        layer.appendChild(button);
+        spot.el = button;
+      });
+      const layout = () => {
+        const cottage = document.querySelector('.cottage');
+        if (!cottage) return;
+        const k = cottage.getBoundingClientRect().width / 720;
+        spots.forEach((spot) => {
+          const point = housePoint(spot.key);
+          if (!point) return;
+          spot.el.style.width = `${spot.w * k}px`;
+          spot.el.style.height = `${spot.h * k}px`;
+          spot.el.style.transform = `translate(${(point.x - (spot.w * k) / 2).toFixed(1)}px, ${(point.y + (spot.dy - spot.h / 2) * k).toFixed(1)}px)`;
+        });
+      };
+      layout();
+      window.addEventListener('resize', layout);
+      if (document.fonts) document.fonts.ready.then(layout);
+      setTimeout(layout, 800);
+    }
+
+    function tapHouse(key) {
+      Sound.chime();
+      const inside = crew.filter((pet) => pet.mode === 'inside');
+      const someone = inside[Math.floor(Math.random() * inside.length)];
+      if (key === 'door') {
+        // Tocar la puerta: sale alguien, o el que esté más cerca corre a entrar.
+        if (someone) return leaveByDoor(someone);
+        const door = housePoint('door');
+        const free = outside().filter((pet) => pet.mode !== 'held');
+        if (!door || !free.length) return;
+        const nearest = free.reduce((best, pet) => (Math.hypot(pet.x - door.x, pet.y - door.y) < Math.hypot(best.x - door.x, best.y - door.y) ? pet : best));
+        if (state.time === 'night') return enterHouse(nearest);
+        walkTo(nearest, door.x, door.y, 'enter');
+        think(nearest, 'heart');
+        return;
+      }
+      // Tocar una ventana: alguien de adentro se asoma por ahí.
+      if (someone) return peek(someone, key);
+      const peeking = crew.find((pet) => pet.mode === 'peek' && pet.window === key);
+      if (peeking) jumpDown(peeking);
+    }
+
+    // ---------- Crear a cada uno ----------
     function create(def, index) {
       const el = document.createElement('button');
       el.type = 'button';
       el.className = 'pet';
-      el.setAttribute('aria-label', `${def.name}. Tócale para saludar.`);
+      el.setAttribute('aria-label', `${def.name}. Tócale para saludar o arrástrale para moverle.`);
       el.innerHTML = `<span class="pet-tag">${def.name}</span><span class="pet-bubble"></span><div class="pet-flip"><div class="pet-bob"><svg viewBox="0 0 100 110" aria-hidden="true">${ART[def.key]}</svg></div></div><span class="pet-zzz">z z</span>`;
       layer.appendChild(el);
       const b = bounds();
       const pet = {
-        def, el, walking: false, rest: 1 + Math.random() * 3, face: index % 2 ? -1 : 1,
+        def, el, mode: 'idle', rest: 1 + Math.random() * 3, face: index % 2 ? -1 : 1, scale: 1,
         x: b.left + ((index + 0.5) / CREW.length) * (b.right - b.left),
         y: Math.min(b.bottom, 150 + (index % 3) * 46),
         speed: 26 + Math.random() * 16
       };
       el.style.setProperty('--face', pet.face);
       place(pet);
+      enableDrag(pet);
       el.addEventListener('click', (event) => {
         event.stopPropagation();
+        // Un arrastre termina en "click": ese no cuenta como saludo.
+        if (pet.dragged) {
+          pet.dragged = false;
+          return;
+        }
         Sound.tinkle();
-        el.classList.remove('is-hop');
-        void el.offsetWidth;
-        flash(pet, 'is-hop', 700);
+        hop(pet);
         flash(pet, 'show-tag', 2200);
         floatHearts($('waterLayer'), pet.x, meadow.offsetTop + pet.y - el.offsetHeight * 0.8);
+        if (pet.mode === 'peek') {
+          setTimeout(() => jumpDown(pet), 300);
+          return;
+        }
         if (state.time !== 'night') think(pet);
       });
       return pet;
     }
 
+    // ---------- Cada cuadro ----------
     function tick(now) {
       if (!running) return;
       requestAnimationFrame(tick);
       if (document.hidden) { last = now; return; }
-      const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+      // Avanzan según el tiempo real, aunque el teléfono dibuje pocos cuadros por segundo.
+      const dt = Math.min(0.25, (now - last) / 1000 || 0.016);
       last = now;
       const asleep = state.time === 'night';
       crew.forEach((pet) => {
-        if (asleep) return;
-        if (!pet.walking) {
-          pet.rest -= dt;
-          if (pet.rest <= 0) {
-            if (Math.random() < 0.3) think(pet);
-            pickSpot(pet);
+        if (pet.mode === 'held' || pet.mode === 'entering') return;
+        if (pet.mode === 'jump') {
+          const j = pet.jump;
+          j.t = Math.min(1, j.t + dt / j.length);
+          const ease = j.t;
+          pet.x = j.fromX + (j.toX - j.fromX) * ease;
+          pet.y = j.fromY + (j.toY - j.fromY) * ease - Math.sin(Math.PI * ease) * 70;
+          pet.scale = j.fromScale + (1 - j.fromScale) * ease;
+          place(pet);
+          if (j.t >= 1) {
+            hop(pet);
+            idle(pet, 1 + Math.random() * 2);
           }
           return;
         }
+        // De noche, los de adentro se quedan adentro y los de afuera duermen donde estén.
+        if (asleep) return;
+        if (pet.mode === 'inside') {
+          pet.timer -= dt;
+          if (pet.timer <= 0) {
+            if (Math.random() < 0.45) peek(pet);
+            else leaveByDoor(pet);
+          }
+          return;
+        }
+        if (pet.mode === 'peek') {
+          pet.timer -= dt;
+          if (pet.timer <= 0) jumpDown(pet);
+          return;
+        }
+        if (pet.mode === 'sit') {
+          pet.timer -= dt;
+          pet.nextThought -= dt;
+          if (pet.nextThought <= 0) {
+            pet.nextThought = 6 + Math.random() * 8;
+            if (Math.random() < 0.6) think(pet, Math.random() < 0.6 ? 'flower' : null);
+          }
+          if (pet.timer <= 0) idle(pet, 0.5 + Math.random() * 2);
+          return;
+        }
+        if (pet.mode === 'idle') {
+          pet.rest -= dt;
+          if (pet.rest <= 0) chooseNext(pet);
+          return;
+        }
+        if (pet.mode !== 'walk') return;
         const dx = pet.tx - pet.x;
         const dy = pet.ty - pet.y;
         const distance = Math.hypot(dx, dy);
         if (distance < 3) {
-          pet.walking = false;
-          pet.rest = 2 + Math.random() * 5;
-          pet.el.classList.remove('is-walking');
+          arrive(pet);
           return;
         }
         const step = Math.min(distance, pet.speed * dt);
         pet.x += (dx / distance) * step;
         pet.y += (dy / distance) * step;
-        const face = dx > 0 ? 1 : -1;
-        if (Math.abs(dx) > 2 && face !== pet.face) {
-          pet.face = face;
-          pet.el.style.setProperty('--face', face);
-        }
+        if (Math.abs(dx) > 2) setFace(pet, dx > 0 ? 1 : -1);
         place(pet);
       });
     }
@@ -2325,16 +2917,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return {
       refresh() {
         if (!layer) return;
-        if (!crew.length) crew = CREW.map(create);
+        if (!crew.length) {
+          crew = CREW.map(create);
+          makeHouseButtons();
+        }
         const asleep = state.time === 'night';
         crew.forEach((pet) => {
           pet.el.classList.toggle('is-asleep', asleep);
-          if (asleep) {
-            pet.walking = false;
-            pet.el.classList.remove('is-walking');
+          if (asleep && pet.mode === 'walk') {
+            if (pet.next === 'enter') enterHouse(pet);
+            else idle(pet);
           }
+          if (asleep && pet.mode === 'peek') setMode(pet, 'inside');
         });
-        if (!reducedMotion && !running) {
+        // También con "reducir movimiento": siguen sentándose, entrando y saliendo, solo que sin pasear.
+        if (!running) {
           running = true;
           last = performance.now();
           requestAnimationFrame(tick);
@@ -2347,7 +2944,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderChest() {
     const list = $('chestList');
     list.innerHTML = '';
-    const flowers = FlowerStore.getAll().sort((a, b) => b.date.localeCompare(a.date));
+    const flowers = FlowerStore.planted().sort((a, b) => b.date.localeCompare(a.date));
     if (!flowers.length) {
       const empty = document.createElement('li');
       empty.className = 'card-note';
@@ -2371,7 +2968,21 @@ document.addEventListener('DOMContentLoaded', () => {
     renderChest();
     showError($('backupError'), '');
     $('toggleSfx').checked = Sound.enabled;
+    $('selectRadio').value = String(Radio.minutes);
+    $('toggleMotion').checked = !reducedMotion;
     openSheet(chestModal);
+  });
+  $('toggleMotion').addEventListener('change', (event) => {
+    try { localStorage.setItem(STILL_KEY, event.target.checked ? '0' : '1'); } catch (e) {}
+    window.location.reload();
+  });
+  $('selectRadio').addEventListener('change', (event) => {
+    Radio.setMinutes(event.target.value);
+    toast(Radio.minutes ? `Sonará una canción cada ${Radio.minutes === 60 ? 'hora' : `${Radio.minutes} minutos`}` : 'Las canciones quedan apagadas en este dispositivo');
+  });
+  $('btnPlaySong').addEventListener('click', async () => {
+    await closeSheet(chestModal);
+    Radio.playOne({ auto: false });
   });
   $('btnCloseChest').addEventListener('click', () => closeSheet(chestModal));
   $('toggleSfx').addEventListener('change', (event) => Sound.setEnabled(event.target.checked));
@@ -2422,6 +3033,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let qrImageURL = '';
 
   function unlockPanel(announce) {
+    // Con la nube, el panel es de la clave de Santiago y no de un truco escondido.
+    if (Cloud.user && !Cloud.isAdmin()) return;
     $('btnOpenAdmin').hidden = false;
     try { localStorage.setItem(PANEL_KEY, '1'); } catch (e) {}
     if (announce) toast('Panel secreto desbloqueado en este dispositivo');
@@ -2444,7 +3057,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const TYPE_LABELS = { astromelia: 'Astromelia', sunflower: 'Girasol', rose: 'Rosa', tulip: 'Tulipán', daisy: 'Margarita', wildflower: 'Flor silvestre' };
+  const TYPE_LABELS = { astromelia: 'Astromelia', sunflower: 'Girasol', rose: 'Rosa', tulip: 'Tulipán', daisy: 'Margarita', wildflower: 'Flor silvestre', ramo: 'Ramo con globito' };
   FLOWER_TYPES.forEach((type, index) => {
     const label = document.createElement('label');
     label.className = 'type-option';
@@ -2655,12 +3268,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const flower = await flowerFromForm({ strict: true });
     if (!flower) return;
 
-    const hasFiles = [flower.realPhoto, flower.couplePhoto, flower.music].some((value) => value.startsWith('data:'));
-    const directURL = FlowerStore.encodeFlowerToURL(flower, base);
-    const packaged = hasFiles || directURL.length > QR_DIRECT_LIMIT;
-
-    currentPackage = packaged ? flower : null;
-    currentURL = packaged ? FlowerStore.packagedFlowerURL(flower, base) : directURL;
+    // Con la nube, la flor se guarda escondida en Firebase y el QR solo lleva su nombre.
+    const cloud = Boolean(Cloud.user);
+    let packaged = false;
+    if (cloud) {
+      const submit = form.querySelector('[type="submit"]');
+      submit.disabled = true;
+      toast('Guardando la flor en la nube…');
+      try {
+        const existing = FlowerStore.get(flower.id);
+        const saved = await FlowerStore.add({ ...flower, porSembrar: !(existing && !existing.porSembrar) });
+        if (!saved || !(await Cloud.ensureUploaded(flower.id))) throw new Error('sin subir');
+      } catch (e) {
+        console.error('No se pudo guardar la flor en la nube', e);
+        toast('No pude guardar la flor en la nube. Revisa tu conexión e inténtalo otra vez.');
+        return;
+      } finally {
+        submit.disabled = false;
+      }
+      renderAdminList();
+      currentPackage = null;
+      currentURL = FlowerStore.packagedFlowerURL(flower, base);
+    } else {
+      const hasFiles = [flower.realPhoto, flower.couplePhoto, flower.music].some((value) => value.startsWith('data:'));
+      const directURL = FlowerStore.encodeFlowerToURL(flower, base);
+      packaged = hasFiles || directURL.length > QR_DIRECT_LIMIT;
+      currentPackage = packaged ? flower : null;
+      currentURL = packaged ? FlowerStore.packagedFlowerURL(flower, base) : directURL;
+    }
 
     try {
       qrImageURL = drawQR(currentURL);
@@ -2674,7 +3309,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $('packageSteps').hidden = !packaged;
     $('btnDownloadPackage').hidden = !packaged;
     $('btnCheckPackage').hidden = !packaged;
-    $('qrQuality').textContent = packaged
+    $('qrQuality').textContent = cloud
+      ? 'La flor ya está guardada en la nube, escondida. Brotará en su jardín cuando escanee este código.'
+      : packaged
       ? 'Las fotos y las cartas largas no caben en un QR, así que esta flor vive en un archivo aparte y el código solo la llama.'
       : currentURL.length <= 400
         ? 'Toda la flor va dentro del código y es fácil de escanear, incluso impreso pequeñito.'
@@ -2802,7 +3439,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.className = 'memory-row';
       item.innerHTML = `<span class="memory-row__art">${createFlowerSVG(flower.type, flower.color, { head: true })}</span><span class="memory-row__text"><strong></strong><small></small></span><button class="btn-link" type="button">Quitar</button>`;
       item.querySelector('strong').textContent = flower.title;
-      item.querySelector('small').textContent = formatDate(flower.date);
+      item.querySelector('small').textContent = formatDate(flower.date) + (flower.porSembrar ? ' · esperando su QR' : '');
       const remove = item.querySelector('button');
       remove.addEventListener('click', async () => {
         if (remove.dataset.confirm !== '1') {
@@ -2820,6 +3457,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('btnOpenAdmin').addEventListener('click', () => {
     renderAdminList();
+    if (Cloud.user) renderSongList();
     openSheet(adminModal);
   });
   $('btnCloseAdmin').addEventListener('click', () => closeSheet(adminModal));
@@ -2827,6 +3465,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================= 14. INICIO =================
   Ambient.start();
   setTimeMode(timeFromClock());
+  startAutoCycle();
   resetForm();
   renderGarden();
   Pets.refresh();
@@ -2837,5 +3476,185 @@ document.addEventListener('DOMContentLoaded', () => {
     if (columnsForWidth() !== gardenColumns) renderGarden();
     else if (flowersContainer.clientWidth !== trailWidth) drawGardenTrail();
   });
-  FlowerStore.migrate().then(() => renderGarden()).catch((e) => console.error(e)).finally(checkURLForFlower);
+  // ================= 15. LA NUBE =================
+  const loginModal = $('loginModal');
+  // La llave no se puede cerrar: sin clave no se entra al jardín.
+  loginModal.addEventListener('cancel', (event) => event.preventDefault());
+
+  function loginMessage(error) {
+    const code = (error && error.code) || '';
+    if (code.includes('too-many-requests')) return 'Demasiados intentos. Espera unos minutos y vuelve a probar.';
+    if (code.includes('network')) return 'No hay conexión. Revisa el internet y vuelve a intentarlo.';
+    return 'Esa no es la clave del jardín. Inténtalo otra vez.';
+  }
+
+  function askForKey() {
+    return new Promise((resolve) => {
+      openSheet(loginModal);
+      setTimeout(() => $('inputGardenKey').focus(), 350);
+      $('formLogin').onsubmit = async (event) => {
+        event.preventDefault();
+        const key = $('inputGardenKey').value;
+        if (!key) {
+          showError($('loginError'), 'Escribe la clave.');
+          return;
+        }
+        const button = $('btnLogin');
+        button.disabled = true;
+        showError($('loginError'), '');
+        try {
+          await Cloud.signIn(key);
+          $('inputGardenKey').value = '';
+          await closeSheet(loginModal);
+          resolve();
+        } catch (e) {
+          console.error('No se pudo entrar', e);
+          showError($('loginError'), loginMessage(e));
+        } finally {
+          button.disabled = false;
+        }
+      };
+    });
+  }
+
+  function applyRole() {
+    const admin = Cloud.isAdmin();
+    $('btnOpenAdmin').hidden = !admin;
+    $('songsSection').hidden = !admin;
+    $('btnSignOut').hidden = false;
+    $('backupNote').textContent = 'El jardín se guarda en la nube y es el mismo en todos sus dispositivos. La copia es un respaldo extra, por si acaso.';
+    $('adminListTitle').textContent = 'Flores del jardín';
+    $('adminListNote').textContent = 'Quitar una flor la borra también de su celular. Las que esperan su QR todavía no se ven en el jardín.';
+  }
+
+  // Si llega algo de otro dispositivo, se redibuja; no en plena ceremonia de brote.
+  function onCloudChange() {
+    if (sproutModal.open) return;
+    renderGarden();
+    if (adminModal.open) renderAdminList();
+  }
+
+  async function connectCloud() {
+    if (!Cloud.init()) return;
+    const user = await Cloud.currentUser();
+    if (!user) await askForKey();
+    applyRole();
+    await Cloud.start(onCloudChange);
+    Cloud.watchSongs((songs) => {
+      Radio.setSongs(songs);
+      if (adminModal.open) renderSongList();
+    });
+  }
+
+  // ---------- Canciones en el panel ----------
+  function renderSongList() {
+    const list = $('songList');
+    list.innerHTML = '';
+    if (!Radio.songs.length) {
+      const empty = document.createElement('li');
+      empty.className = 'card-note';
+      empty.textContent = 'Aún no hay canciones.';
+      list.appendChild(empty);
+    }
+    Radio.songs.forEach((song) => {
+      const item = document.createElement('li');
+      item.className = 'memory-row';
+      item.innerHTML = '<span class="memory-row__text"><strong></strong><small></small></span><button class="btn-link" type="button">Escuchar</button><button class="btn-link" type="button">Quitar</button>';
+      item.querySelector('strong').textContent = song.title;
+      item.querySelector('small').textContent = song.ref.startsWith('nube:') ? 'Archivo guardado en la nube' : 'Enlace';
+      const [listen, remove] = item.querySelectorAll('button');
+      listen.addEventListener('click', () => {
+        if (Music.current === song.ref) Music.stop();
+        else Music.play(song.ref, { loop: false });
+      });
+      remove.addEventListener('click', async () => {
+        if (remove.dataset.confirm !== '1') {
+          remove.dataset.confirm = '1';
+          remove.textContent = '¿Seguro?';
+          return;
+        }
+        remove.disabled = true;
+        if (Music.current === song.ref) Music.stop();
+        await Cloud.removeSong(song).catch((e) => {
+          console.error('No se pudo quitar la canción', e);
+          toast('No pude quitar la canción. Revisa tu conexión.');
+        });
+      });
+      list.appendChild(item);
+    });
+  }
+
+  let songFile = '';
+  $('fileSong').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    songFile = '';
+    showError($('songError'), '');
+    if (!file) return;
+    if (file.size > MAX_AUDIO_BYTES) {
+      event.target.value = '';
+      showError($('songError'), 'Esa canción pesa más de 8 MB. Usa una versión más ligera o un enlace directo.');
+      return;
+    }
+    if (!$('inputSongTitle').value.trim()) $('inputSongTitle').value = file.name.replace(/\.[^.]+$/, '').slice(0, 80);
+    try {
+      songFile = await blobToDataURL(file);
+    } catch (e) {
+      showError($('songError'), 'No pude leer ese archivo de audio.');
+    }
+  });
+
+  $('btnAddSong').addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    const title = $('inputSongTitle').value.trim() || 'Nuestra canción';
+    const link = $('inputSongUrl').value.trim();
+    showError($('songError'), '');
+    let value = songFile;
+    if (!value) {
+      if (!link) return showError($('songError'), 'Elige un archivo o pega un enlace directo a un .mp3.');
+      if (!/^https?:\/\//i.test(link) || /youtube\.com|youtu\.be|spotify\.com/i.test(link)) {
+        return showError($('songError'), 'Necesito un enlace directo a un .mp3. YouTube y Spotify no dejan reproducirse aquí: sube el archivo.');
+      }
+      value = link;
+    }
+    if (value.startsWith('data:') && !/^data:audio\//i.test(value)) {
+      return showError($('songError'), 'Ese archivo no parece una canción.');
+    }
+    button.disabled = true;
+    button.textContent = 'Subiendo…';
+    try {
+      await Cloud.addSong(title, value);
+      toast(`«${title}» ya está en el jardín`);
+      $('inputSongTitle').value = '';
+      $('inputSongUrl').value = '';
+      $('fileSong').value = '';
+      songFile = '';
+    } catch (e) {
+      console.error('No se pudo agregar la canción', e);
+      showError($('songError'), 'No pude subir la canción. Revisa tu conexión e inténtalo otra vez.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Agregar canción';
+    }
+  });
+
+  $('btnSignOut').addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    if (button.dataset.confirm !== '1') {
+      button.dataset.confirm = '1';
+      button.textContent = 'Toca otra vez para salir';
+      return;
+    }
+    await Cloud.signOut();
+    window.location.reload();
+  });
+
+  FlowerStore.migrate()
+    .then(() => renderGarden())
+    .catch((e) => console.error(e))
+    .then(connectCloud)
+    .catch((e) => console.error('No pude conectar con la nube', e))
+    .finally(() => {
+      renderGarden();
+      checkURLForFlower();
+    });
 });

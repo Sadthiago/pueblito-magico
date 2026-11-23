@@ -239,6 +239,7 @@ body.is-raining.time-night #rainVeil { opacity: 0.35; }
   transition: --orbit-angle 2.4s cubic-bezier(0.45, 0.05, 0.3, 1);
 }
 .celestial-orbit.is-dragging { transition: none; }
+.celestial-orbit.is-flowing { transition: --orbit-angle 0.25s linear; }
 
 .celestial-sun, .celestial-moon {
   position: absolute;
@@ -656,6 +657,13 @@ body.watering-mode .flower-meter { opacity: 1; }
 .sprouting-head {
   transform-origin: center;
   animation: blossomOpen 1.5s 0.75s var(--ease-settle) both;
+}
+
+/* El globito del ramo flota despacito */
+.ramo-balloon { transform-box: fill-box; transform-origin: 30% 100%; animation: balloonFloat 3.2s ease-in-out infinite alternate; }
+@keyframes balloonFloat {
+  from { transform: rotate(-4deg) translateY(0); }
+  to { transform: rotate(5deg) translateY(-3px); }
 }
 
 @keyframes stemGrow {
@@ -1173,6 +1181,110 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
   translate: -50% 0;
 }
 
+/* ================= CEREMONIA: LA CARTICA ================= */
+.ceremony {
+  position: relative;
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  min-height: 380px;
+  margin-top: 10px;
+  perspective: 1400px;
+}
+
+.ceremony-envelope {
+  grid-area: 1 / 1;
+  width: min(78vw, 360px);
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  animation: envelopeWiggle 2.4s ease-in-out infinite;
+  transition: transform 0.7s var(--ease-out), opacity 0.45s ease 0.35s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ceremony-envelope svg { display: block; width: 100%; overflow: visible; }
+.envelope-flap { transform-box: fill-box; transform-origin: 50% 0; transition: transform 0.55s ease; }
+.envelope-seal { transform-box: fill-box; transform-origin: center; transition: transform 0.35s ease, opacity 0.3s ease; }
+.ceremony:not([data-step="closed"]) .ceremony-envelope { animation: none; }
+.ceremony:not([data-step="closed"]) .envelope-seal { transform: scale(0); opacity: 0; }
+.ceremony:not([data-step="closed"]) .envelope-flap { transform: scaleY(-1); }
+.ceremony[data-step="open"] .ceremony-envelope { transform: translateY(45%) scale(0.8); opacity: 0; pointer-events: none; }
+
+@keyframes envelopeWiggle {
+  0%, 70%, 100% { transform: rotate(0); }
+  76% { transform: rotate(-4deg) translateY(-4px); }
+  84% { transform: rotate(4deg) translateY(-4px); }
+  92% { transform: rotate(-2deg); }
+}
+
+.ceremony-letter {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(94vw, 720px);
+  height: min(60dvh, 520px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(40px) scale(0.55);
+  transform-style: preserve-3d;
+  transition: opacity 0.45s ease, transform 0.8s var(--ease-out);
+}
+.ceremony[data-step="open"] .ceremony-letter { opacity: 1; transform: none; pointer-events: auto; }
+
+.letter-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 10px;
+  background: #faf7ef;
+  border: 3px solid var(--ink);
+  box-shadow: 0 4px 0 var(--ink);
+  overflow: hidden;
+}
+/* La hoja de la izquierda está doblada sobre la derecha y se abre como un libro */
+.letter-page--left {
+  border-radius: 16px 0 0 16px;
+  border-right-width: 1.5px;
+  transform-origin: right center;
+  transform: rotateY(178deg);
+  backface-visibility: hidden;
+  transition: transform 1s 0.35s var(--ease-settle);
+}
+.ceremony[data-step="open"] .letter-page--left { transform: none; }
+.letter-page--right { justify-content: flex-end; padding: 0; border-radius: 0 16px 16px 0; border-left-width: 1.5px; }
+
+.ceremony-photo {
+  margin: 0;
+  max-width: 100%;
+  padding: 7px 7px 6px;
+  background: #fff;
+  border: 2.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 0 3px 0 var(--ink);
+  rotate: -3deg;
+}
+.ceremony-photo img {
+  display: block;
+  width: 100%;
+  max-height: calc(min(60dvh, 520px) - 110px);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 3px;
+  background: #fff0d4;
+}
+.ceremony-photo figcaption { margin-top: 6px; font-weight: 600; font-size: 15px; line-height: 1.2; color: var(--ink); text-align: center; }
+.card--sprout .ceremony-date { order: 0; margin: 10px 0 0; max-width: none; font-size: 14px; }
+
+/* La tierra y la flor crecen dentro de la hoja derecha */
+.letter-page--right .sprout-ground { flex: 1 1 auto; height: 100%; min-height: 0; }
+.letter-page--right .sprout-soil { width: 100%; }
+.letter-page--right .sprout-seedling { width: 46%; bottom: 20%; }
+.letter-page--right .sprout-flower { height: 84%; bottom: 12%; }
+
 /* ================= BANQUITA ================= */
 .bench-quote {
   margin: 14px 0 20px;
@@ -1182,6 +1294,21 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
   color: var(--ink);
 }
 #benchModal .btn { width: 100%; }
+.card--login .btn { width: 100%; margin-top: 16px; }
+.switch-row select {
+  min-height: 40px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: #fffaf0;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+}
+#btnPlaySong { width: 100%; margin-top: 10px; }
+.song-form { display: grid; gap: 12px; margin-top: 12px; }
+.song-form .btn { justify-self: start; }
+#btnSignOut:not([hidden]) { display: block; margin: 14px auto 0; }
 
 /* ================= BUZÓN ================= */
 .envelopes { display: grid; margin-top: 14px; border-top: 1px solid var(--line); }
@@ -1298,7 +1425,7 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
 .field-pair { display: grid; gap: 18px; }
 @media (min-width: 560px) { .field-pair { grid-template-columns: 1fr 1fr; } }
 
-.field input[type="text"], .field input[type="url"], .field input[type="date"], .field select, .field textarea {
+.field input[type="text"], .field input[type="password"], .field input[type="url"], .field input[type="date"], .field select, .field textarea {
   display: block;
   width: 100%;
   min-height: 46px;
@@ -1496,6 +1623,51 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
   0%, 100% { transform: scale(1, 1); }
   50% { transform: scale(1.03, 0.97); }
 }
+
+/* Se arrastran con el dedo, se sientan a mirar el jardín y entran y salen de la casita */
+.pet { transform-origin: 50% 96%; touch-action: none; cursor: grab; }
+.pet.is-held { cursor: grabbing; }
+.pet.is-held .pet-bob { animation: petDangle 0.38s ease-in-out infinite alternate; transform-origin: 50% 30%; }
+.pet.is-held svg > ellipse:first-child { opacity: 0; }
+.pet-bob { transition: transform 0.35s var(--ease-settle); }
+.pet.is-sitting .pet-bob { transform: scale(1.05, 0.9); }
+.pet.is-entering .pet-bob { animation: petEnter 0.6s ease-in forwards; }
+.pet.is-emerging .pet-bob { animation: petEmerge 0.6s var(--ease-out); }
+.pet.is-inside { visibility: hidden; pointer-events: none; }
+.pet.is-peeking .pet-tag, .pet.is-peeking .pet-bubble { scale: 1.4; }
+#petsLayer.is-dancing .pet:not(.is-asleep):not(.is-walking):not(.is-held):not(.is-hop):not(.is-entering) .pet-bob {
+  animation: petDance 0.48s ease-in-out infinite alternate;
+}
+
+.house-hit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 45% 45% 10px 10px;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.house-hit:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+@keyframes petDangle {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}
+@keyframes petEnter {
+  to { opacity: 0; transform: translateY(-8%) scale(0.45); }
+}
+@keyframes petEmerge {
+  from { opacity: 0; transform: scale(0.45); }
+}
+@keyframes petDance {
+  from { transform: rotate(-6deg) translateY(0); }
+  to { transform: rotate(6deg) translateY(-7%); }
+}
 @keyframes zzz {
   0% { opacity: 0; transform: translate(0, 6px) scale(0.7); }
   40% { opacity: 1; }
@@ -1644,7 +1816,7 @@ dialog.sheet::backdrop { background: rgba(74, 50, 38, 0.42); }
 .polaroid img { border: 3px solid var(--ink); border-radius: 6px; }
 .water-state strong { font-weight: 700; font-style: normal; }
 
-.field input[type="text"], .field input[type="url"], .field input[type="date"], .field select, .field textarea {
+.field input[type="text"], .field input[type="password"], .field input[type="url"], .field input[type="date"], .field select, .field textarea {
   border: 2.5px solid var(--line);
   border-radius: 14px;
   font-family: var(--font-body);
@@ -1681,16 +1853,15 @@ dialog.sheet::backdrop { background: rgba(74, 50, 38, 0.42); }
 }
 
 /* ================= MOVIMIENTO REDUCIDO ================= */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .cloud { animation: none; left: 12%; }
-  .sun-rays { animation: none; }
-  .pet-bob { animation: none !important; }
-  .cloud-2 { left: 62%; }
-  .cloud-3 { left: 78%; }
-  .smoke path { opacity: 0.5; }
+/* Recuerdos > Animaciones del jardín apagadas */
+html.is-still *, html.is-still *::before, html.is-still *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }
+html.is-still .cloud { animation: none; left: 12%; }
+html.is-still .sun-rays { animation: none; }
+html.is-still .pet-bob { animation: none !important; }
+html.is-still .cloud-2 { left: 62%; }
+html.is-still .cloud-3 { left: 78%; }
+html.is-still .smoke path { opacity: 0.5; }

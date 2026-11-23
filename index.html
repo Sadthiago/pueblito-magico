@@ -340,7 +340,30 @@
   <dialog class="sheet" id="sproutCelebrationModal" aria-labelledby="sproutTitle">
     <canvas class="fx-canvas"></canvas>
     <div class="card card--sprout">
-      <button class="sprout-ground" id="sproutAnimationStage" type="button" data-phase="seed" aria-label="Plantar la semilla">
+      <!-- La cartica: primero un sobre; al abrirlo, a la izquierda la foto y a la derecha la semillita -->
+      <div class="ceremony" id="ceremony" data-step="closed">
+        <button class="ceremony-envelope" id="ceremonyEnvelope" type="button" aria-label="Abrir la cartica">
+          <svg viewBox="0 0 220 160" aria-hidden="true">
+            <g stroke="#4a3226" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+              <rect x="10" y="30" width="200" height="120" rx="14" fill="#ffd0da"/>
+              <path fill="#ffc0cf" d="M10,140 L94,86 Q110,76 126,86 L210,140 Q210,150 200,150 H20 Q10,150 10,140 Z"/>
+              <path fill="#ffb3c4" d="M12,40 L98,96 Q110,104 122,96 L208,40"/>
+              <g class="envelope-flap"><path fill="#ff9fb1" d="M14,34 Q10,30 24,30 H196 Q210,30 206,34 L122,96 Q110,104 98,96 Z"/></g>
+              <path class="envelope-seal" fill="#e8413c" d="M110,108 C98,99 92,90 98,84 C102,80 108,82 110,87 C112,82 118,80 122,84 C128,90 122,99 110,108 Z"/>
+            </g>
+          </svg>
+        </button>
+
+        <div class="ceremony-letter">
+          <div class="letter-page letter-page--left">
+            <figure class="ceremony-photo">
+              <img id="ceremonyPhoto" alt="">
+              <figcaption id="ceremonyCaption"></figcaption>
+            </figure>
+            <p class="ceremony-date" id="ceremonyDate"></p>
+          </div>
+          <div class="letter-page letter-page--right">
+            <button class="sprout-ground" id="sproutAnimationStage" type="button" data-phase="seed" aria-label="Plantar la semilla">
                 <span class="sprout-flower" id="sproutFlower"></span>
         <svg class="sprout-seedling" viewBox="0 0 120 140" aria-hidden="true">
           <path class="sprout-stem" d="M60,128 C58,110 61,92 60,74" fill="none" stroke="#2f4a33" stroke-width="4" stroke-linecap="round"/>
@@ -351,10 +374,13 @@
           <path d="M6,70 C40,18 160,18 194,70 Z" fill="#6f5a43"/>
           <ellipse class="sprout-seed" cx="100" cy="24" rx="7" ry="10" fill="#2a2118"/>
         </svg>
-      </button>
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <h2 id="sproutTitle">Llegó una semillita</h2>
-      <p id="sproutSubtitle">Toca la tierra para plantarla.</p>
+      <h2 id="sproutTitle">Llegó una cartica</h2>
+      <p id="sproutSubtitle">Tócala para abrirla.</p>
       <button class="btn btn--sun" id="btnFinishSprout" type="button" hidden>Ver mi flor en el jardín</button>
     </div>
   </dialog>
@@ -387,7 +413,7 @@
       <ul class="memory-list" id="chestList"></ul>
 
       <h3 class="card-subtitle">Cuidar el jardín</h3>
-      <p class="card-note">El jardín vive en este dispositivo. Guarda una copia de vez en cuando: con ella lo recuperas en otro teléfono o si el navegador borra sus datos.</p>
+      <p class="card-note" id="backupNote">El jardín vive en este dispositivo. Guarda una copia de vez en cuando: con ella lo recuperas en otro teléfono o si el navegador borra sus datos.</p>
       <div class="backup-actions">
         <button class="btn btn--soft" id="btnExportBackup" type="button"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span>Guardar copia</span></button>
         <label class="btn btn--soft" for="fileImportBackup"><svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg><span>Recuperar copia</span></label>
@@ -399,6 +425,23 @@
         <span>Sonidos del jardín</span>
         <input type="checkbox" id="toggleSfx" checked>
       </label>
+      <label class="switch-row">
+        <span>Animaciones del jardín</span>
+        <input type="checkbox" id="toggleMotion" checked>
+      </label>
+      <label class="switch-row">
+        <span>Canciones del jardín</span>
+        <select id="selectRadio">
+          <option value="0">Apagadas</option>
+          <option value="5">Cada 5 min</option>
+          <option value="10">Cada 10 min</option>
+          <option value="20">Cada 20 min</option>
+          <option value="30">Cada 30 min</option>
+          <option value="60">Cada hora</option>
+        </select>
+      </label>
+      <button class="btn btn--soft" id="btnPlaySong" type="button"><svg class="ico" aria-hidden="true"><use href="#i-music"/></svg><span>Escuchar una ahora</span></button>
+      <button class="btn-link" id="btnSignOut" type="button" hidden>Salir del jardín en este dispositivo</button>
     </div>
   </dialog>
 
@@ -522,9 +565,28 @@
         </div>
       </section>
 
+      <section class="planted-section" id="songsSection" hidden>
+        <h3 class="card-subtitle">Canciones del jardín</h3>
+        <p class="card-note">Suenan solas cada cierto tiempo mientras el jardín está abierto, en su celular y en el tuyo. Archivo de hasta 8 MB o enlace directo a un .mp3.</p>
+        <ul class="memory-list memory-list--admin" id="songList"></ul>
+        <div class="song-form">
+          <div class="field">
+            <label for="inputSongTitle">Nombre de la canción</label>
+            <input type="text" id="inputSongTitle" maxlength="80" placeholder="Nuestra canción">
+          </div>
+          <div class="field">
+            <label for="fileSong">Archivo de audio</label>
+            <input type="file" id="fileSong" accept="audio/*">
+            <input type="url" id="inputSongUrl" placeholder="o pega un enlace directo a un .mp3">
+            <p class="field-error" id="songError" role="alert" hidden></p>
+          </div>
+          <button class="btn btn--soft" id="btnAddSong" type="button">Agregar canción</button>
+        </div>
+      </section>
+
       <section class="planted-section">
-        <h3 class="card-subtitle">Flores plantadas en este dispositivo</h3>
-        <p class="card-note">Para limpiar tus pruebas. No afecta al jardín de su celular.</p>
+        <h3 class="card-subtitle" id="adminListTitle">Flores plantadas en este dispositivo</h3>
+        <p class="card-note" id="adminListNote">Para limpiar tus pruebas. No afecta al jardín de su celular.</p>
         <ul class="memory-list memory-list--admin" id="adminFlowerList"></ul>
       </section>
     </div>
@@ -532,7 +594,28 @@
 
   <audio id="bgAudio" loop preload="none"></audio>
 
+  <!-- ================= LLAVE DEL JARDÍN ================= -->
+  <dialog class="sheet" id="loginModal" aria-labelledby="loginTitle">
+    <div class="card card--login">
+      <h2 id="loginTitle">Nuestro Jardín</h2>
+      <p class="card-lead">Escribe la clave del jardín para entrar. En este teléfono solo te la pediré una vez.</p>
+      <form id="formLogin" novalidate>
+        <div class="field">
+          <label for="inputGardenKey">Clave</label>
+          <input type="password" id="inputGardenKey" autocomplete="current-password" enterkeyhint="go">
+          <p class="field-error" id="loginError" role="alert" hidden></p>
+        </div>
+        <button class="btn btn--sun" id="btnLogin" type="submit">Entrar al jardín</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="flowers-data.js"></script>
+  <script src="nube.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

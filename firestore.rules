@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// Reglas del jardín. Se pegan en Firebase > Firestore Database > Reglas.
+// Solo las dos cuentas del jardín pueden leer o escribir; nadie más, aunque tenga el enlace.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSantiago() {
+      return request.auth != null
+        && request.auth.token.email == 'santiago@pueblito-magico-245f6.firebaseapp.com';
+    }
+
+    function isElla() {
+      return request.auth != null
+        && request.auth.token.email == 'ella@pueblito-magico-245f6.firebaseapp.com';
+    }
+
+    function isFamily() {
+      return isSantiago() || isElla();
+    }
+
+    // Ella puede regar y hacer brotar sus flores, pero no cambiar ni borrar lo que escribiste.
+    function onlyCare() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['waterLevel', 'lastWatered', 'porSembrar', 'plantedAt', 'editadoEn']);
+    }
+
+    match /flores/{flowerId} {
+      allow read: if isFamily();
+      allow create: if isFamily();
+      allow update: if isSantiago() || (isElla() && onlyCare());
+      allow delete: if isSantiago();
+    }
+
+    // Las canciones que suenan solas en el jardín: las agrega y quita Santiago.
+    match /canciones/{songId} {
+      allow read: if isFamily();
+      allow write: if isSantiago();
+    }
+
+    // Fotos y canciones, partidas en pedazos de menos de 1 MB.
+    match /archivos/{partId} {
+      allow read: if isFamily();
+      allow create: if isFamily();
+      allow update, delete: if isSantiago();
+    }
+  }
+}

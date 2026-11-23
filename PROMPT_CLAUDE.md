@@ -67,6 +67,9 @@ jardin-flores-magicas/
 ├── style.css           # Estilos, ciclo de color por hora, hojas de contenido y animaciones
 ├── script.js           # Lógica interactiva: ciclo celeste, canvas de luciérnagas, SVG generator y audio
 ├── flowers-data.js     # Capa de datos: localStorage, fotos en IndexedDB, QR y copias de seguridad
+├── nube.js             # Sincronización con Firebase: claves, flores, fotos y canciones
+├── firebase-config.js  # Configuración pública del proyecto de Firebase
+├── firestore.rules     # Quién puede leer y escribir en la nube
 ├── manifest.webmanifest # Datos para instalarla como app en el celular
 ├── flores/             # Flores con fotos o cartas largas: <id>.json, se publican con el sitio
 ├── README.md           # Guía rápida de uso y despliegue para Santiago
@@ -154,7 +157,7 @@ Cuando estés trabajando en este proyecto, sigue estas reglas:
 3. **Mejoras ya implementadas:** lluvia con sonido, mariposas interactivas, exportación de recuerdos a imagen y PDF, copia de seguridad en JSON, melodía propia por flor e instalación como app.
 4. **Diseñar para el celular primero:** se verá ahí. Todo debe funcionar con el dedo, sin depender de pasar el ratón, en pantallas desde 320 px.
 5. **Dejar sitio:** el jardín tiene que aguantar cientos de flores. No subir el peso de cada flor sin medirlo.
-6. **Pendiente, si se desea:** sincronizar el jardín entre dispositivos con Neon o Supabase. Requiere un backend, así que solo se hace si Santiago lo pide expresamente.
+6. **Nube:** el jardín se sincroniza con Firebase (Auth con clave + Firestore, plan Spark, sin Storage). `nube.js` hace la sincronización: gana el cambio más reciente (`editadoEn`), las flores creadas en el panel esperan escondidas (`porSembrar`) hasta que se escanea su QR, y fotos y canciones van en pedazos en la colección `archivos`. Las reglas están en `firestore.rules`. Detalles en el README.
 
 ---
 
