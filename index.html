@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Nuestro Jardín Mágico</title>
+  <title>Jardín del Pueblito Mágico</title>
   <meta name="description" content="Un jardín donde cada flor que te regale vive para siempre.">
   <meta name="theme-color" content="#6db5f5">
   <meta name="mobile-web-app-capable" content="yes">
@@ -255,7 +255,7 @@
   <!-- ================= CONTROLES ================= -->
   <header class="topbar">
     <div class="brand">
-      <h1 id="headerTitle">Nuestro Jardín</h1>
+      <h1 id="headerTitle">Jardín del Pueblito Mágico</h1>
       <p id="gardenCounterText"></p>
     </div>
     <p class="topbar-quote" id="headerSubtitle">Donde las flores que te regale nunca se van a marchitar.</p>
@@ -270,9 +270,7 @@
   <nav class="dock" aria-label="Cuidar el jardín">
     <div class="dock-inner">
       <button class="dock-btn" id="btnWateringCan" type="button" aria-pressed="false"><svg class="ico ico--color" aria-hidden="true"><use href="#k-can"/></svg><span id="wateringLabel">Regar</span></button>
-      <button class="dock-btn" id="btnRain" type="button" aria-pressed="false"><svg class="ico ico--color" aria-hidden="true"><use href="#k-rain"/></svg><span>Lluvia</span></button>
       <button class="dock-btn" id="btnMusic" type="button" aria-pressed="false"><svg class="ico ico--color" aria-hidden="true"><use href="#k-music"/></svg><span>Música</span></button>
-      <button class="dock-btn" id="btnChest" type="button"><svg class="ico ico--color" aria-hidden="true"><use href="#k-book"/></svg><span>Recuerdos</span></button>
       <button class="dock-btn" id="btnOpenAdmin" type="button" hidden><svg class="ico ico--color" aria-hidden="true"><use href="#k-qr"/></svg><span>Panel</span></button>
     </div>
   </nav>
@@ -299,6 +297,7 @@
         <div>
           <p id="modalLetter"></p>
           <p class="letter-signature" id="modalSignature"></p>
+          <div class="spotify-box" id="modalSpotify" hidden></div>
         </div>
       </div>
 
@@ -327,6 +326,7 @@
       <div class="memory-actions">
         <button class="btn btn--sun" id="btnWaterSingleFlower" type="button">Regar esta flor</button>
         <button class="btn btn--soft" id="btnFlowerMelody" type="button" hidden><svg class="ico" aria-hidden="true"><use href="#i-music"/></svg><span>Escuchar su melodía</span></button>
+        <button class="btn btn--soft" id="btnEditFlower" type="button" hidden>Editar esta flor</button>
       </div>
       <div class="memory-export">
         <span>Guardar este recuerdo</span>
@@ -405,52 +405,14 @@
     </div>
   </dialog>
 
-  <!-- ================= RECUERDOS Y COPIA DE SEGURIDAD ================= -->
-  <dialog class="sheet" id="chestModal" aria-labelledby="chestTitle">
-    <div class="card">
-      <button class="sheet-close" id="btnCloseChest" type="button" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
-      <h2 id="chestTitle">Nuestros Recuerdos</h2>
-      <ul class="memory-list" id="chestList"></ul>
-
-      <h3 class="card-subtitle">Cuidar el jardín</h3>
-      <p class="card-note" id="backupNote">El jardín vive en este dispositivo. Guarda una copia de vez en cuando: con ella lo recuperas en otro teléfono o si el navegador borra sus datos.</p>
-      <div class="backup-actions">
-        <button class="btn btn--soft" id="btnExportBackup" type="button"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span>Guardar copia</span></button>
-        <label class="btn btn--soft" for="fileImportBackup"><svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg><span>Recuperar copia</span></label>
-        <input class="visually-hidden" type="file" id="fileImportBackup" accept=".json,application/json">
-      </div>
-      <p class="field-error" id="backupError" role="alert" hidden></p>
-
-      <label class="switch-row">
-        <span>Sonidos del jardín</span>
-        <input type="checkbox" id="toggleSfx" checked>
-      </label>
-      <label class="switch-row">
-        <span>Animaciones del jardín</span>
-        <input type="checkbox" id="toggleMotion" checked>
-      </label>
-      <label class="switch-row">
-        <span>Canciones del jardín</span>
-        <select id="selectRadio">
-          <option value="0">Apagadas</option>
-          <option value="5">Cada 5 min</option>
-          <option value="10">Cada 10 min</option>
-          <option value="20">Cada 20 min</option>
-          <option value="30">Cada 30 min</option>
-          <option value="60">Cada hora</option>
-        </select>
-      </label>
-      <button class="btn btn--soft" id="btnPlaySong" type="button"><svg class="ico" aria-hidden="true"><use href="#i-music"/></svg><span>Escuchar una ahora</span></button>
-      <button class="btn-link" id="btnSignOut" type="button" hidden>Salir del jardín en este dispositivo</button>
-    </div>
-  </dialog>
 
   <!-- ================= PANEL SECRETO ================= -->
   <dialog class="sheet" id="adminModal" aria-labelledby="adminTitle">
     <div class="card card--panel">
       <button class="sheet-close" id="btnCloseAdmin" type="button" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       <h2 id="adminTitle">Crear Flor y Generar QR</h2>
-      <p class="card-lead">Prepara aquí el regalo antes de entregarle las flores físicas.</p>
+      <p class="card-lead" id="adminLead">Prepara aquí el regalo antes de entregarle las flores físicas.</p>
+      <p class="edit-banner" id="editBanner" hidden></p>
 
       <form id="formCreateFlower" novalidate>
         <div class="panel-preview">
@@ -458,6 +420,13 @@
           <fieldset class="type-picker">
             <legend>Tipo de flor</legend>
             <div id="typePicker"></div>
+          </fieldset>
+          <fieldset class="type-picker">
+            <legend>Dónde vive</legend>
+            <div id="basePicker">
+              <label class="type-option"><input type="radio" name="flowerBase" value="maceta"><span>En macetica</span></label>
+              <label class="type-option"><input type="radio" name="flowerBase" value="suelo"><span>En el suelo</span></label>
+            </div>
           </fieldset>
         </div>
 
@@ -470,6 +439,16 @@
             <button type="button" class="color-preset" style="--c:#edd27a" data-color="#edd27a" aria-label="Amarillo pastel"></button>
             <button type="button" class="color-preset" style="--c:#c9602e" data-color="#c9602e" aria-label="Naranja atardecer"></button>
           </div>
+        </div>
+
+        <div class="field" id="mixField" hidden>
+          <span class="field-label" id="mixLabel">Mezclar con otros colores <small>(opcional, hasta 3)</small></span>
+          <div class="color-row" role="group" aria-labelledby="mixLabel" id="mixPicker"></div>
+        </div>
+
+        <div class="field" id="potField">
+          <span class="field-label" id="potLabel">Tipo de macetica</span>
+          <div class="pot-picker" role="radiogroup" aria-labelledby="potLabel" id="potPicker"></div>
         </div>
 
         <div class="field">
@@ -505,12 +484,14 @@
             <label for="fileFlowerPhoto">Foto del ramo real</label>
             <input type="file" id="fileFlowerPhoto" accept="image/*">
             <input type="url" id="inputFlowerPhotoUrl" placeholder="O pega un enlace https://" aria-label="Enlace a la foto del ramo">
+            <label class="keep-row" id="keepRealRow" hidden><input type="checkbox" id="keepRealPhoto" checked> Dejar la foto que ya tiene</label>
             <p class="field-error" id="fileFlowerPhotoError" role="alert" hidden></p>
           </div>
           <div class="field">
             <label for="fileCouplePhoto">Foto de ustedes</label>
             <input type="file" id="fileCouplePhoto" accept="image/*">
             <input type="url" id="inputCouplePhotoUrl" placeholder="O pega un enlace https://" aria-label="Enlace a la foto de ustedes">
+            <label class="keep-row" id="keepCoupleRow" hidden><input type="checkbox" id="keepCouplePhoto" checked> Dejar la foto que ya tiene</label>
             <p class="field-error" id="fileCouplePhotoError" role="alert" hidden></p>
           </div>
         </div>
@@ -527,8 +508,16 @@
           <div id="customMusicFields" hidden>
             <input type="file" id="fileFlowerMusic" accept="audio/*" aria-label="Archivo de la canción">
             <input type="url" id="inputFlowerMusicUrl" placeholder="O enlace directo a un .mp3" aria-label="Enlace a la canción">
+            <label class="keep-row" id="keepMusicRow" hidden><input type="checkbox" id="keepMusic" checked> Dejar la canción que ya tiene</label>
           </div>
           <p class="field-error" id="musicError" role="alert" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="inputFlowerSpotify">Canción de Spotify en su cartica <small>(opcional)</small></label>
+          <input type="url" id="inputFlowerSpotify" placeholder="https://open.spotify.com/track/…">
+          <p class="field-help">En Spotify: los tres puntitos de la canción › Compartir › Copiar enlace, y lo pegas aquí. También sirve un álbum o una lista.</p>
+          <p class="field-error" id="spotifyError" role="alert" hidden></p>
         </div>
 
         <div class="field">
@@ -541,6 +530,8 @@
         <div class="panel-actions">
           <button type="submit" class="btn btn--sun"><svg class="ico" aria-hidden="true"><use href="#i-qr-code"/></svg><span>Generar código QR</span></button>
           <button type="button" class="btn btn--soft" id="btnDirectPlant">Plantar aquí ahora</button>
+          <button type="button" class="btn btn--sun" id="btnSaveEdit" hidden>Guardar cambios</button>
+          <button type="button" class="btn-link" id="btnCancelEdit" hidden>Cancelar edición</button>
         </div>
       </form>
 
@@ -589,6 +580,26 @@
         <p class="card-note" id="adminListNote">Para limpiar tus pruebas. No afecta al jardín de su celular.</p>
         <ul class="memory-list memory-list--admin" id="adminFlowerList"></ul>
       </section>
+
+      <section class="planted-section">
+        <h3 class="card-subtitle">Este dispositivo</h3>
+        <label class="switch-row">
+          <span>Sonidos del jardín</span>
+          <input type="checkbox" id="toggleSfx" checked>
+        </label>
+        <label class="switch-row">
+          <span>Animaciones del jardín</span>
+          <input type="checkbox" id="toggleMotion" checked>
+        </label>
+        <p class="card-note" id="backupNote">Una copia del jardín en un archivo, por si acaso.</p>
+        <div class="backup-actions">
+          <button class="btn btn--soft" id="btnExportBackup" type="button"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span>Guardar copia</span></button>
+          <label class="btn btn--soft" for="fileImportBackup"><svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg><span>Recuperar copia</span></label>
+          <input class="visually-hidden" type="file" id="fileImportBackup" accept=".json,application/json">
+        </div>
+        <p class="field-error" id="backupError" role="alert" hidden></p>
+        <button class="btn-link" id="btnSignOut" type="button" hidden>Salir del jardín en este dispositivo</button>
+      </section>
     </div>
   </dialog>
 
@@ -597,7 +608,7 @@
   <!-- ================= LLAVE DEL JARDÍN ================= -->
   <dialog class="sheet" id="loginModal" aria-labelledby="loginTitle">
     <div class="card card--login">
-      <h2 id="loginTitle">Nuestro Jardín</h2>
+      <h2 id="loginTitle">Jardín del Pueblito Mágico</h2>
       <p class="card-lead">Escribe la clave del jardín para entrar. En este teléfono solo te la pediré una vez.</p>
       <form id="formLogin" novalidate>
         <div class="field">

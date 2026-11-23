@@ -143,10 +143,20 @@ function astromeliaDef(p, random, id) {
       <path fill="none" stroke="#7a4a1a" stroke-width="2" stroke-linecap="round" d="M-6,14h.01M-1,16h.01M4,15h.01M8,11h.01"/></g>`;
 }
 
+// Ramos de varios colores: una astromelia por color, y cada flor del ramo toma el siguiente.
+function astromeliaDefs(palettes, random, id) {
+  return palettes.map((pal, i) => astromeliaDef(pal, random, i ? `${id}c${i}` : id)).join('');
+}
+function astromeliaRef(id, index, count) {
+  const i = index % count;
+  return i ? `${id}c${i}f` : `${id}f`;
+}
+
 // El ramo de astromelias amarillas envuelto en papel blanco con rayas doradas, moño rojo
 // y su globito dorado de corazón, como el de la foto.
-function bouquetSVG(p, random, id, { head = false, sprouting = false } = {}) {
-  const blossom = (x, y, rotation, scale) => `<use href="#${id}f" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 20)}) scale(${scale})"/>`;
+function bouquetSVG(p, random, id, { head = false, sprouting = false, base = 'suelo', pot = 'redondita', palettes = [p] } = {}) {
+  let next = 0;
+  const blossom = (x, y, rotation, scale) => `<use href="#${astromeliaRef(id, next++, palettes.length)}" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 20)}) scale(${scale})"/>`;
   const balloon = `<g class="ramo-balloon">
       <path fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round" d="M84,56 C82,72 72,88 64,112"/>
       <g transform="translate(86,30) rotate(-10) scale(1.15)" stroke="${INK}" stroke-width="2" stroke-linejoin="round">
@@ -171,24 +181,52 @@ function bouquetSVG(p, random, id, { head = false, sprouting = false } = {}) {
       <path fill="#e8413c" stroke-width="1.7" d="M58.5,177 L53,195 L56,193.5 L57.5,197.5 Z M61.5,177 L67,195 L64,193.5 L62.5,197.5 Z"/>
       <circle cx="60" cy="176" r="3" fill="#c92f2b" stroke-width="1.7"/>
     </g>`;
-  const defs = `<defs>${astromeliaDef(p, random, id)}</defs>`;
+  const defs = `<defs>${astromeliaDefs(palettes, random, id)}</defs>`;
   if (head) {
     return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="6 4 108 136">${defs}${balloon}${paperBack}${leaves}${flowers}</svg>`;
   }
-  return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">${defs}
-    <ellipse cx="60" cy="212" rx="22" ry="4.5" fill="#1f5a2a" opacity=".22"/>
-    <g class="stem-container ${sprouting ? 'sprouting-stem' : ''}">${paperBack}${paperFront}</g>
-    <g class="flower-blossom ${sprouting ? 'sprouting-head' : ''}">${leaves}${flowers}${balloon}</g>
-    <path fill="none" stroke="${INK}" stroke-width="2.3" stroke-linejoin="round" d="M32,134 C38,130 44,137 50,133 C55,137 65,137 70,133 C76,137 82,130 88,134"/>
+  const grow = sprouting ? 'sprouting-stem' : '';
+  const bloom = sprouting ? 'sprouting-head' : '';
+
+  // En su macetica: el ramo envuelto en papel, metido en la maceta.
+  if (base === 'maceta') {
+    const potParts = potArt(pot, id, random, p);
+    return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">${defs}${potParts.back}
+      <g transform="translate(0,-16)"><g class="stem-container ${grow}">${paperBack}${paperFront}</g></g>
+      <g transform="translate(0,-16)"><g class="flower-blossom ${bloom}">${leaves}${flowers}${balloon}</g></g>
+      <path transform="translate(0,-16)" fill="none" stroke="${INK}" stroke-width="2.3" stroke-linejoin="round" d="M32,134 C38,130 44,137 50,133 C55,137 65,137 70,133 C76,137 82,130 88,134"/>
+      ${potParts.front}
+    </svg>`;
+  }
+
+  // En el suelo: sin papel, los tallos amarrados con el moño y sembrados en la tierra.
+  const ground = groundMound(random);
+  const stems = 'M60,204 C58,180 52,150 40,112 M60,204 C60,178 60,150 60,98 M60,204 C62,180 68,150 80,112 M60,204 C56,184 44,160 28,128 M60,204 C64,184 76,160 92,128 M60,204 C59,182 54,160 48,124 M60,204 C61,182 66,160 72,124';
+  const bow = `<g stroke="${INK}" stroke-width="1.9" stroke-linejoin="round">
+      <path fill="#e8413c" d="M52,168 C56,170 64,170 68,168 L68,174 C64,176 56,176 52,174 Z"/>
+      <path fill="#e8413c" d="M60,171 C53,163 44,163 45,169.5 C46,176 54,176 60,171 Z"/>
+      <path fill="#e8413c" d="M60,171 C67,163 76,163 75,169.5 C74,176 66,176 60,171 Z"/>
+      <path fill="#e8413c" stroke-width="1.7" d="M58.5,172 L53,189 L56,187.5 L57.5,191.5 Z M61.5,172 L67,189 L64,187.5 L62.5,191.5 Z"/>
+      <circle cx="60" cy="171" r="3" fill="#c92f2b" stroke-width="1.7"/>
+    </g>`;
+  return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">${defs}${ground.back}
+    <g class="stem-container ${grow}">
+      <path fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" d="${stems}"/>
+      <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2.8" stroke-linecap="round" d="${stems}"/>
+      ${bow}
+    </g>
+    ${ground.front}
+    <g class="flower-blossom ${bloom}">${leaves}${flowers}${balloon}</g>
   </svg>`;
 }
 
 const BLOSSOMS = {
-  astromelia(p, random, id) {
+  astromelia(p, random, id, palettes = [p]) {
     // Un solo tallo que se abre en un ramito, como la astromelia de verdad
-    const blossom = (x, y, rotation, scale) => `<use href="#${id}f" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 18)}) scale(${scale})"/>`;
+    let next = 0;
+    const blossom = (x, y, rotation, scale) => `<use href="#${astromeliaRef(id, next++, palettes.length)}" transform="translate(${x},${y}) rotate(${f1(rotation + (random() - 0.5) * 18)}) scale(${scale})"/>`;
     return `<defs>
-      ${astromeliaDef(p, random, id)}</defs>
+      ${astromeliaDefs(palettes, random, id)}</defs>
       <g class="flower-leaves" fill="${STEM}" ${OUTLINE}>${leaf(-16, 24, 158, 34, 7)}${leaf(16, 26, 22, 34, 7)}</g>
       <path fill="none" stroke="${INK}" stroke-width="5.4" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
       <path class="flower-stem" fill="none" stroke="${STEM}" stroke-width="2.2" stroke-linecap="round" d="M0,46Q-16,20 -27,4M0,46Q15,20 27,3M0,46Q0,10 2,-28M0,46Q-30,-4 -40,-36M0,46Q28,-8 42,-34"/>
@@ -274,16 +312,95 @@ function flowerPot(id, random, palette) {
   };
 }
 
-function createFlowerSVG(type, color = '#e3ae2b', { seed = 1, sprouting = false, head = false } = {}) {
+// Tipos de macetica. Todas dejan la tierra a la misma altura (y≈176) para que el tallo encaje igual.
+const POT_LABELS = { redondita: 'Redondita', barro: 'De barro', canasta: 'Canastica', tacita: 'Tacita', latica: 'Latica' };
+
+function potArt(style, id, random, palette) {
+  const shadow = '<ellipse cx="60" cy="217" rx="33" ry="5.5" fill="#1f5a2a" opacity=".22"/>';
+  const soil = '<ellipse cx="60" cy="176" rx="27" ry="5.5" fill="#7a4a2e"/>';
+  const stroke = `stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"`;
+  if (style === 'barro') {
+    return {
+      back: shadow + soil,
+      front: `<g ${stroke}>
+        <path fill="#d9774a" d="M33,183 L39,213 C40,216 42,217 45,217 H75 C78,217 80,216 81,213 L87,183 Z"/>
+        <path fill="none" stroke="#f2a77c" stroke-width="3" stroke-linecap="round" d="M41,190 L45,209"/>
+        <path fill="none" stroke="#b85a33" stroke-width="2" stroke-linecap="round" d="M37,198 H83"/>
+        <rect x="26" y="170" width="68" height="15" rx="4" fill="#e88a5a"/>
+        <path fill="none" stroke="#ffc3a0" stroke-width="2.4" stroke-linecap="round" d="M32,175 H64"/>
+      </g>`
+    };
+  }
+  if (style === 'canasta') {
+    const rows = [190, 199, 208].map((y) => `M31,${y} C45,${y + 3} 75,${y + 3} 89,${y}`).join(' ');
+    const cols = [40, 50, 60, 70, 80].map((x) => `M${x},184 C${x + (x - 60) * 0.05},198 ${x - (x - 60) * 0.12},208 ${x - (x - 60) * 0.18},215`).join(' ');
+    return {
+      // El asa va detrás de las flores
+      back: `${shadow}<path fill="none" stroke="${INK}" stroke-width="7" stroke-linecap="round" d="M30,178 C28,118 92,118 90,178"/><path fill="none" stroke="#e8b56a" stroke-width="3.4" stroke-linecap="round" d="M30,178 C28,118 92,118 90,178"/>${soil}`,
+      front: `<g ${stroke}>
+        <path fill="#e8b56a" d="M29,182 C29,205 40,217 60,217 C80,217 91,205 91,182 Z"/>
+        <path fill="none" stroke="#c98e45" stroke-width="1.8" stroke-linecap="round" d="${rows} ${cols}"/>
+        <rect x="25" y="171" width="70" height="13" rx="6.5" fill="#f0c987"/>
+        <path fill="none" stroke="#c98e45" stroke-width="1.8" stroke-linecap="round" d="M33,173 l-4,9 M42,173 l-4,9 M51,173 l-4,9 M60,173 l-4,9 M69,173 l-4,9 M78,173 l-4,9 M87,173 l-4,9"/>
+        <path fill="#ff9fb1" stroke-width="1.6" d="M82,177 c-4,-5 -11,-2 -8,3 l8,6 l8,-6 c3,-5 -4,-8 -8,-3 Z"/>
+      </g>`
+    };
+  }
+  if (style === 'tacita') {
+    const cups = [['#ffd0da', '#ff9fb1'], ['#d8f1ff', '#8fd3ff'], ['#fff1c7', '#f6c64a'], ['#eadcff', '#c9a2f0']];
+    const [cup, dot] = cups[Math.floor(random() * cups.length)];
+    return {
+      back: `${shadow}<ellipse cx="60" cy="215" rx="40" ry="5.5" fill="#fffaf0" ${stroke}/>${soil}`,
+      front: `<g ${stroke}>
+        <path fill="none" stroke="${INK}" stroke-width="7" stroke-linecap="round" d="M88,186 C103,184 104,203 86,204"/>
+        <path fill="none" stroke="${cup}" stroke-width="3" stroke-linecap="round" d="M88,186 C103,184 104,203 86,204"/>
+        <path fill="${cup}" d="M28,176 C28,201 40,213 60,213 C80,213 92,201 92,176 Z"/>
+        <g fill="${dot}" stroke="none"><circle cx="42" cy="190" r="3"/><circle cx="58" cy="198" r="3"/><circle cx="74" cy="189" r="3"/><circle cx="50" cy="206" r="2.4"/><circle cx="68" cy="206" r="2.4"/></g>
+        <path fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2.6" stroke-linecap="round" d="M35,184 C36,194 39,201 43,205"/>
+        <ellipse cx="60" cy="176" rx="32" ry="5" fill="none"/>
+      </g>`
+    };
+  }
+  if (style === 'latica') {
+    return {
+      back: shadow + soil,
+      front: `<g ${stroke}>
+        <path fill="#b9c7d0" d="M31,181 L36,213 C36,216 38,217 41,217 H79 C82,217 84,216 84,213 L89,181 Z"/>
+        <path fill="none" stroke="#93a5b0" stroke-width="2" stroke-linecap="round" d="M33,192 H87 M34,203 H86"/>
+        <path fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="3" stroke-linecap="round" d="M40,186 L43,210"/>
+        <rect x="27" y="171" width="66" height="12" rx="6" fill="#d3dde3"/>
+        <circle cx="29" cy="187" r="3" fill="#93a5b0"/><circle cx="91" cy="187" r="3" fill="#93a5b0"/>
+        <path fill="#e8413c" stroke-width="1.6" d="M60,195 c-3,-4.5 -10,-2.5 -8,3.5 l8,8 l8,-8 c2,-6 -5,-8 -8,-3.5 Z"/>
+      </g>`
+    };
+  }
+  return flowerPot(id, random, palette);
+}
+
+// Para las que viven sembradas en el suelo: un montoncito de tierra con pastito, en vez de macetica.
+function groundMound(random) {
+  const tuft = (x, flip) => `<path transform="translate(${x},210) scale(${flip},1)" d="M0,0 l2.5,-10 l2.5,7 l3,-9 l2,12 Z"/>`;
+  const side = random() > 0.5 ? 1 : -1;
+  return {
+    back: `<ellipse cx="60" cy="211" rx="34" ry="5" fill="#1f5a2a" opacity=".22"/>`,
+    front: `<path fill="#8a5a3a" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" d="M28,211 C34,198 47,194 60,195 C73,194 86,198 92,211 Z"/>
+      <path fill="none" stroke="#a87650" stroke-width="2" stroke-linecap="round" d="M42,204h.01M52,200h.01M68,201h.01M78,206h.01M60,206h.01"/>
+      <g fill="#7cc865" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${tuft(side > 0 ? 24 : 86, 1)}${tuft(side > 0 ? 88 : 34, -1)}</g>`
+  };
+}
+
+function createFlowerSVG(type, color = '#e3ae2b', { seed = 1, sprouting = false, head = false, base, pot: potStyle = 'redondita', colors = [] } = {}) {
+  base = base || (type === 'ramo' ? 'suelo' : 'maceta');
   const random = seededRandom(typeof seed === 'string' ? hashString(seed) : seed);
   const palette = flowerPalette(color);
+  const palettes = [palette, ...(colors || []).filter((c) => /^#[0-9a-f]{6}$/i.test(c)).map(flowerPalette)];
   const top = BLOSSOM_Y[type] ?? 56;
   const bend = (random() - 0.5) * 12;
   const tilt = (random() - 0.5) * 10;
   const side = random() > 0.5 ? 1 : -1;
   const id = `fl${++flowerUid}`;
-  if (type === 'ramo') return bouquetSVG(palette, random, id, { head, sprouting });
-  const blossom = (BLOSSOMS[type] || BLOSSOMS.wildflower)(palette, random, id);
+  if (type === 'ramo') return bouquetSVG(palette, random, id, { head, sprouting, base, pot: potStyle, palettes });
+  const blossom = (BLOSSOMS[type] || BLOSSOMS.wildflower)(palette, random, id, palettes);
 
   if (head) {
     return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="-68 -68 136 136"><g transform="${type === 'tulip' ? 'translate(0,11)' : ''}">${blossom}</g></svg>`;
@@ -308,9 +425,10 @@ function createFlowerSVG(type, color = '#e3ae2b', { seed = 1, sprouting = false,
     leaves = leaf(stemX(160), 160, leafAngle(side, 22), 36, 10) + leaf(stemX(136), 136, leafAngle(-side, 26), 32, 9);
   }
 
-  const stemPath = `M60,180 Q${f1(60 + bend)},${f1((180 + top) / 2)} 60,${top}`;
+  // En el suelo el tallo baja hasta la tierra, que queda más abajo que la de la macetica.
+  const stemPath = `${base === 'suelo' ? 'M60,204 L60,180 ' : 'M60,180 '}Q${f1(60 + bend)},${f1((180 + top) / 2)} 60,${top}`;
   const stem = `<path d="${stemPath}" fill="none" stroke="${INK}" stroke-width="7.2" stroke-linecap="round"/><path class="flower-stem" d="${stemPath}" fill="none" stroke="${STEM}" stroke-width="3.6" stroke-linecap="round"/>`;
-  const pot = flowerPot(id, random, palette);
+  const pot = base === 'suelo' ? groundMound(random) : potArt(potStyle, id, random, palette);
 
   return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">
     ${pot.back}
@@ -367,7 +485,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminModal = $('adminModal');
   const benchModal = $('benchModal');
   const lettersModal = $('lettersModal');
-  const chestModal = $('chestModal');
 
   const HEART_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21C5 15.5 2 12 2 8a5 5 0 0 1 10-1.5A5 5 0 0 1 22 8c0 4-3 7.5-10 13z"/></svg>';
   const CAN_SVG = '<svg viewBox="0 0 24 24"><path d="M8.6 11.2c3.6-.2 7.4-.2 11 0l.4 9c-3.8.2-7.8.2-11.6 0z" fill="#7c9aa0"/><path d="M8.6 11.2c3.6-.2 7.4-.2 11 0l.4 9c-3.8.2-7.8.2-11.6 0zM8.6 13.4 3.6 9.2M1.8 10.8l3.6-3.4M19.8 13c2.6-.6 3.2 4.2.2 5M11 11c0-4.4 6-4.4 6 0" fill="none" stroke="#2f2a24" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -433,13 +550,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  [flowerModal, adminModal, benchModal, lettersModal, chestModal].forEach((dialog) => {
+  [flowerModal, adminModal, benchModal, lettersModal].forEach((dialog) => {
     dialog.addEventListener('click', (event) => {
       if (event.target === dialog) closeSheet(dialog);
     });
   });
 
-  [flowerModal, adminModal, benchModal, lettersModal, chestModal].forEach((dialog) => {
+  [flowerModal, adminModal, benchModal, lettersModal].forEach((dialog) => {
     const card = dialog.querySelector('.card');
     const grab = document.createElement('div');
     grab.className = 'sheet-grab';
@@ -732,12 +849,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let timer = null;
     let wantedByUser = false;
 
-    function startTrack(name) {
+    function startTrack(name, gain = 1) {
       const track = TRACKS[name];
       const beat = 60 / track.bpm;
       let barIndex = 0;
       let barStart = Sound.now() + 0.15;
-      Sound.fadeMusic(1, 1.2);
+      Sound.fadeMusic(gain, 1.2);
       const schedule = () => {
         while (barStart < Sound.now() + 0.6) {
           const [chordName, melody] = track.bars[barIndex];
@@ -758,6 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let onStop = null;
+    let loud = false;
 
     function stop() {
       clearInterval(timer);
@@ -771,7 +889,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // loop: false para las canciones del jardín, que suenan una vez y paran.
-    async function play(spec, { loop = true, quiet = false } = {}) {
+    // volume: 1 normal; la música de fondo del jardín va más bajita.
+    async function play(spec, { loop = true, quiet = false, volume = 1 } = {}) {
+      loud = volume >= 0.9;
       Sound.ensure();
       clearInterval(timer);
       timer = null;
@@ -779,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
       current = spec;
       updateUI();
       if (TRACKS[spec]) {
-        startTrack(spec);
+        startTrack(spec, volume);
         return true;
       }
       Sound.fadeMusic(0, 0.4);
@@ -789,7 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (current !== spec) return false;
         audio.loop = loop;
         audio.src = url;
-        audio.volume = 0.65;
+        audio.volume = 0.65 * volume;
         await audio.play();
         return true;
       } catch (e) {
@@ -824,8 +944,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
-      // Las mascoticas bailan mientras suena música.
-      $('petsLayer').classList.toggle('is-dancing', Boolean(current));
+      // Las mascoticas bailan con la música de una flor; con la de fondo, bajita, siguen en lo suyo.
+      $('petsLayer').classList.toggle('is-dancing', Boolean(current) && loud);
       $('btnMusic').setAttribute('aria-pressed', String(Boolean(current)));
       const flower = state.activeFlower;
       if (flower && flower.music) {
@@ -847,10 +967,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   })();
 
-  $('btnMusic').addEventListener('click', () => {
-    if (Music.current) Music.stop();
-    else Music.play('casita');
-  });
+  // El botón Música prende o apaga la música de fondo del jardín.
+  $('btnMusic').addEventListener('click', () => Radio.toggle());
 
   $('btnFlowerMelody').addEventListener('click', () => {
     const flower = state.activeFlower;
@@ -859,64 +977,87 @@ document.addEventListener('DOMContentLoaded', () => {
     else Music.play(flower.music);
   });
 
-  // ================= CANCIONES DEL JARDÍN =================
-  // Las canciones que Santiago sube en el panel suenan solas cada cierto tiempo
-  // mientras el jardín está abierto. Cada dispositivo elige cada cuánto (o nunca).
+  // ================= MÚSICA DE FONDO =================
+  // El jardín tiene música todo el tiempo, bajita: las canciones que Santiago sube en el panel,
+  // una tras otra al azar, o si no hay ninguna, el piano de la casita. Arranca con el primer toque
+  // (los celulares no dejan sonar nada antes) y el botón Música la apaga o la vuelve a prender.
   const Radio = (() => {
-    const EVERY_KEY = 'jardin_magico_radio';
+    const ON_KEY = 'jardin_magico_musica';
     const LIST_KEY = 'jardin_magico_canciones';
-    let minutes = 10;
+    const BACKGROUND_VOLUME = 0.32;
+    let on = true;
     let songs = [];
-    let quietSince = Date.now();
+    let started = false;
+    let held = false;
     let lastId = '';
     let playingSong = null;
+    let backgroundSpec = '';
+    let resumeTimer = null;
     try {
-      const saved = localStorage.getItem(EVERY_KEY);
-      if (saved !== null) minutes = Number(saved) || 0;
+      on = localStorage.getItem(ON_KEY) !== '0';
       songs = JSON.parse(localStorage.getItem(LIST_KEY) || '[]');
     } catch (e) {}
 
     const playable = () => songs.filter((song) => safeMusic(song.ref));
 
-    async function playOne({ auto }) {
+    async function playNext() {
+      clearTimeout(resumeTimer);
+      if (!on || !started || held || Music.current || document.hidden) return;
       const pool = playable();
-      if (!pool.length) {
-        if (!auto) toast('Todavía no hay canciones. Santiago las agrega desde el panel.');
-        return false;
+      if (pool.length) {
+        const choices = pool.length > 1 ? pool.filter((song) => song.id !== lastId) : pool;
+        const song = choices[Math.floor(Math.random() * choices.length)];
+        lastId = song.id;
+        playingSong = song;
+        backgroundSpec = song.ref;
+        if (await Music.play(song.ref, { loop: false, quiet: true, volume: BACKGROUND_VOLUME })) return;
+        playingSong = null;
       }
-      const choices = pool.length > 1 ? pool.filter((song) => song.id !== lastId) : pool;
-      const song = choices[Math.floor(Math.random() * choices.length)];
-      lastId = song.id;
-      playingSong = song;
-      const ok = await Music.play(song.ref, { loop: false, quiet: auto });
-      if (ok) toast(`Sonando: ${song.title}`);
-      else playingSong = null;
-      return ok;
+      const tracks = Object.keys(TRACKS);
+      backgroundSpec = tracks[Math.floor(Math.random() * tracks.length)];
+      Music.play(backgroundSpec, { volume: BACKGROUND_VOLUME });
     }
 
-    // Cuando para cualquier música, el reloj vuelve a empezar.
+    // Cuando para lo que suena (se acaba una canción, o la melodía de una flor), vuelve la de fondo.
     Music.onStop = () => {
       playingSong = null;
-      quietSince = Date.now();
+      backgroundSpec = '';
+      clearTimeout(resumeTimer);
+      if (on && !held) resumeTimer = setTimeout(playNext, 1500);
     };
 
-    setInterval(() => {
-      if (!minutes || document.hidden || Music.current || document.querySelector('dialog[open]')) return;
-      if (Date.now() - quietSince < minutes * 60000) return;
-      quietSince = Date.now();
-      playOne({ auto: true });
-    }, 15000);
+    document.addEventListener('pointerdown', () => {
+      Music.unlock();
+      if (started) return;
+      started = true;
+      setTimeout(playNext, 400);
+    }, { capture: true });
 
-    // Safari necesita un primer toque para dejar sonar audio después.
-    document.addEventListener('pointerdown', () => Music.unlock(), { once: true, capture: true });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !Music.current) resumeTimer = setTimeout(playNext, 800);
+    });
 
     return {
-      playOne,
-      get minutes() { return minutes; },
-      setMinutes(value) {
-        minutes = Number(value) || 0;
-        quietSince = Date.now();
-        try { localStorage.setItem(EVERY_KEY, String(minutes)); } catch (e) {}
+      toggle() {
+        on = !on;
+        try { localStorage.setItem(ON_KEY, on ? '1' : '0'); } catch (e) {}
+        started = true;
+        if (on) {
+          Music.stop();
+          playNext();
+          toast('Música del jardín prendida');
+        } else {
+          clearTimeout(resumeTimer);
+          Music.stop();
+          toast('Música del jardín apagada');
+        }
+      },
+      // Mientras suena Spotify en una cartica, la del jardín espera.
+      hold(value) {
+        held = value;
+        clearTimeout(resumeTimer);
+        if (value && Music.current && Music.current === backgroundSpec) Music.stop();
+        if (!value && on) resumeTimer = setTimeout(playNext, 800);
       },
       get songs() { return songs; },
       setSongs(list) {
@@ -1528,8 +1669,10 @@ document.addEventListener('DOMContentLoaded', () => {
     $('meadowHint').hidden = hintDone || flowers.length === 0;
 
     $('gardenCounterText').textContent = flowers.length === 0
-      ? 'Un jardín por estrenar'
-      : `${flowers.length} ${flowers.length === 1 ? 'flor eterna' : 'flores eternas'}`;
+      ? 'Aquí vivirán todas las flores que te regale, y nunca se marchitarán'
+      : flowers.length === 1
+        ? 'Tienes 1 flor que no se marchitará y podrás ver todas las que te regale aquí'
+        : `Tienes ${flowers.length} flores que no se marchitarán y podrás ver todas las que te regale aquí`;
 
     flowers.forEach((flower, index) => {
       const slot = flowerSlot(index, gardenColumns, flower.id);
@@ -1540,7 +1683,7 @@ document.addEventListener('DOMContentLoaded', () => {
       button.dataset.id = flower.id;
       button.setAttribute('aria-label', `${flower.title}, ${formatDate(flower.date)}`);
       button.style.cssText = `--x:${slot.x.toFixed(2)}%;--r:${slot.row.toFixed(2)};--n:${slot.nudge.toFixed(1)}px;--s:${slot.scale.toFixed(3)};z-index:${20 + index};--sway-delay:-${(index * 1.3) % 5}s;--level:${level}%`;
-      button.innerHTML = `<span class="flower-body"><span class="flower-sway">${createFlowerSVG(flower.type, flower.color, { seed: flower.id, sprouting: flower.id === newlyPlantedId })}</span></span><span class="flower-name"></span><span class="flower-meter"><i></i></span>`;
+      button.innerHTML = `<span class="flower-body"><span class="flower-sway">${createFlowerSVG(flower.type, flower.color, { colors: flower.colors, pot: flower.pot, base: flower.base, seed: flower.id, sprouting: flower.id === newlyPlantedId })}</span></span><span class="flower-name"></span><span class="flower-meter"><i></i></span>`;
       button.querySelector('.flower-name').textContent = flower.title;
       if (level < 95) button.querySelector('.flower-svg').style.opacity = (0.75 + level / 400).toFixed(2);
       button.addEventListener('click', () => {
@@ -1669,7 +1812,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.activeFlower = flower;
     $('meadowHint').hidden = true;
     try { localStorage.setItem('jardin_magico_pista', '1'); } catch (e) {}
-    $('modalFlowerArt').innerHTML = createFlowerSVG(flower.type, flower.color, { head: true, seed: flower.id });
+    $('modalFlowerArt').innerHTML = createFlowerSVG(flower.type, flower.color, { colors: flower.colors, pot: flower.pot, base: flower.base, head: true, seed: flower.id });
     $('modalFlowerTypeTag').textContent = FLOWER_NAMES[flower.type];
     $('modalTitle').textContent = flower.title;
     $('modalDate').textContent = `Regalada con todo mi amor el ${formatDate(flower.date)}`;
@@ -1680,6 +1823,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setPolaroid($('modalCouplePhoto'), flower.couplePhoto, flower, 'couple');
     showWaterLevel(flower);
     $('btnFlowerMelody').hidden = !flower.music;
+    showSpotify(flower);
+    // Solo quien tiene el panel (la clave de Santiago) puede editarla.
+    $('btnEditFlower').hidden = $('btnOpenAdmin').hidden;
     Music.updateUI();
     switchModalTab('Carta');
     openSheet(flowerModal);
@@ -1687,6 +1833,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   $('btnCloseModal').addEventListener('click', () => closeSheet(flowerModal));
+
+  // La canción de Spotify de la cartica. Mientras la cartica está abierta, la música del jardín espera.
+  function showSpotify(flower) {
+    const box = $('modalSpotify');
+    box.innerHTML = '';
+    box.hidden = !flower.spotify;
+    if (!flower.spotify) return;
+    const frame = document.createElement('iframe');
+    frame.src = `https://open.spotify.com/embed/${flower.spotify}?utm_source=generator`;
+    frame.title = 'Canción de Spotify';
+    frame.loading = 'lazy';
+    frame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+    box.appendChild(frame);
+    Radio.hold(true);
+  }
+
+  flowerModal.addEventListener('close', () => {
+    if (!$('modalSpotify').hidden) {
+      $('modalSpotify').innerHTML = '';
+      Radio.hold(false);
+    }
+  });
 
   const TAB_NAMES = ['Carta', 'Fotos', 'Significado'];
 
@@ -1835,7 +2003,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#fffaf0';
     ctx.fillRect(0, 0, width, height);
 
-    const art = await loadImage(svgDataURI(createFlowerSVG(flower.type, flower.color, { seed: flower.id }), 120, 220));
+    const art = await loadImage(svgDataURI(createFlowerSVG(flower.type, flower.color, { colors: flower.colors, pot: flower.pot, base: flower.base, seed: flower.id }), 120, 220));
     ctx.drawImage(art, width / 2 - 60, 38, 120, 220);
 
     ctx.textAlign = 'center';
@@ -1877,7 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.fillStyle = '#7a5b47';
     ctx.font = '600 40px Fredoka, sans-serif';
-    ctx.fillText('Nuestro Jardín · flores eternas', width / 2, height - 44);
+    ctx.fillText('Jardín del Pueblito Mágico', width / 2, height - 44);
     return canvas;
   }
 
@@ -2007,7 +2175,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         stage.dataset.phase = 'bloom';
         stage.querySelector('.sprout-seedling').style.opacity = 0;
-        $('sproutFlower').innerHTML = createFlowerSVG(flower.type, flower.color, { seed: flower.id, sprouting: true });
+        $('sproutFlower').innerHTML = createFlowerSVG(flower.type, flower.color, { colors: flower.colors, pot: flower.pot, base: flower.base, seed: flower.id, sprouting: true });
       }, 1300);
 
       setTimeout(() => {
@@ -2107,6 +2275,12 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnLoveLetters').addEventListener('click', () => openSheet(lettersModal));
   $('btnCloseLetters').addEventListener('click', () => closeSheet(lettersModal));
 
+  if (!QUICK_LETTERS.length) {
+    const empty = document.createElement('p');
+    empty.className = 'card-note';
+    empty.textContent = 'Pronto habrá carticas nuevas aquí.';
+    $('quickLettersList').appendChild(empty);
+  }
   QUICK_LETTERS.forEach((letter) => {
     const details = document.createElement('details');
     details.className = 'envelope';
@@ -2118,15 +2292,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ================= 10. LLUVIA =================
+  // Ya no hay botón: de vez en cuando, al azar, llueve un ratico y riega todo el jardín.
   let rainWaterTimer = null;
-  $('btnRain').addEventListener('click', () => {
-    state.raining = !state.raining;
-    document.body.classList.toggle('is-raining', state.raining);
-    $('btnRain').setAttribute('aria-pressed', String(state.raining));
+  function setRain(on) {
+    state.raining = on;
+    document.body.classList.toggle('is-raining', on);
     clearTimeout(rainWaterTimer);
-    if (state.raining) {
+    if (on) {
       Sound.startRain();
-      // Si llueve un ratico, las flores quedan regadas solas.
       rainWaterTimer = setTimeout(() => {
         waterEverything();
         toast('La lluvia regó todas tus flores');
@@ -2135,7 +2308,23 @@ document.addEventListener('DOMContentLoaded', () => {
       Sound.stopRain();
     }
     Butterflies.refresh();
-  });
+  }
+
+  const RAIN_EVERY_MIN = [6, 14];
+  const RAIN_LASTS_S = [25, 45];
+  const between = ([low, high]) => low + Math.random() * (high - low);
+  function scheduleRain() {
+    setTimeout(() => {
+      // Si la página no se está viendo o hay una hoja abierta, espera a la próxima.
+      if (document.hidden || document.querySelector('dialog[open]')) return scheduleRain();
+      setRain(true);
+      setTimeout(() => {
+        setRain(false);
+        scheduleRain();
+      }, between(RAIN_LASTS_S) * 1000);
+    }, between(RAIN_EVERY_MIN) * 60000);
+  }
+  scheduleRain();
 
   // ================= 11. EL HADA Y LAS MARIPOSAS =================
   const Butterflies = (() => {
@@ -2943,50 +3132,10 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   // ================= 12. RECUERDOS Y COPIA DE SEGURIDAD =================
-  function renderChest() {
-    const list = $('chestList');
-    list.innerHTML = '';
-    const flowers = FlowerStore.planted().sort((a, b) => b.date.localeCompare(a.date));
-    if (!flowers.length) {
-      const empty = document.createElement('li');
-      empty.className = 'card-note';
-      empty.textContent = 'Todavía no hay flores. La primera llegará con un código QR.';
-      list.appendChild(empty);
-    }
-    flowers.forEach((flower) => {
-      const item = document.createElement('li');
-      item.innerHTML = `<button class="memory-row" type="button"><span class="memory-row__art">${createFlowerSVG(flower.type, flower.color, { head: true })}</span><span class="memory-row__text"><strong></strong><small></small></span></button>`;
-      item.querySelector('strong').textContent = flower.title;
-      item.querySelector('small').textContent = formatDate(flower.date);
-      item.querySelector('button').addEventListener('click', async () => {
-        await closeSheet(chestModal);
-        openFlowerDetail(flower.id);
-      });
-      list.appendChild(item);
-    });
-  }
-
-  $('btnChest').addEventListener('click', () => {
-    renderChest();
-    showError($('backupError'), '');
-    $('toggleSfx').checked = Sound.enabled;
-    $('selectRadio').value = String(Radio.minutes);
-    $('toggleMotion').checked = !reducedMotion;
-    openSheet(chestModal);
-  });
   $('toggleMotion').addEventListener('change', (event) => {
     try { localStorage.setItem(STILL_KEY, event.target.checked ? '0' : '1'); } catch (e) {}
     window.location.reload();
   });
-  $('selectRadio').addEventListener('change', (event) => {
-    Radio.setMinutes(event.target.value);
-    toast(Radio.minutes ? `Sonará una canción cada ${Radio.minutes === 60 ? 'hora' : `${Radio.minutes} minutos`}` : 'Las canciones quedan apagadas en este dispositivo');
-  });
-  $('btnPlaySong').addEventListener('click', async () => {
-    await closeSheet(chestModal);
-    Radio.playOne({ auto: false });
-  });
-  $('btnCloseChest').addEventListener('click', () => closeSheet(chestModal));
   $('toggleSfx').addEventListener('change', (event) => Sound.setEnabled(event.target.checked));
 
   $('btnExportBackup').addEventListener('click', async (event) => {
@@ -3013,7 +3162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const restored = await FlowerStore.importBackup(JSON.parse(await file.text()));
       renderGarden();
-      renderChest();
       toast(restored === 1 ? 'Recuperé 1 flor' : `Recuperé ${restored} flores`);
     } catch (e) {
       console.error('No se pudo recuperar la copia', e);
@@ -3072,15 +3220,80 @@ document.addEventListener('DOMContentLoaded', () => {
     return form.elements.flowerType.value;
   }
 
+  // Macetica o suelo: el ramo propone el suelo y las demás la macetica, hasta que se elija a mano.
+  let baseChosen = false;
+  function selectedBase() {
+    return form.elements.flowerBase.value || (selectedType() === 'ramo' ? 'suelo' : 'maceta');
+  }
+  function suggestBase() {
+    if (baseChosen) return;
+    const value = selectedType() === 'ramo' ? 'suelo' : 'maceta';
+    form.querySelector(`input[name="flowerBase"][value="${value}"]`).checked = true;
+  }
+  $('basePicker').addEventListener('change', () => {
+    baseChosen = true;
+    updatePreview();
+  });
+
+  // ---------- Ramos de varios colores ----------
+  const MIX_COLORS = [
+    ['#ff9fb1', 'Rosado'], ['#e8413c', 'Rojo'], ['#ffffff', 'Blanco'], ['#c9a2f0', 'Lila'],
+    ['#ffa24c', 'Naranja'], ['#facc15', 'Amarillo'], ['#8fd3ff', 'Celeste'], ['#7fd08a', 'Verde']
+  ];
+  MIX_COLORS.forEach(([color, name]) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'mix-chip';
+    chip.style.setProperty('--c', color);
+    chip.dataset.color = color;
+    chip.setAttribute('aria-pressed', 'false');
+    chip.setAttribute('aria-label', name);
+    chip.addEventListener('click', () => {
+      const on = chip.getAttribute('aria-pressed') !== 'true';
+      if (on && selectedColors().length >= 3) {
+        toast('Hasta 3 colores para mezclar');
+        return;
+      }
+      chip.setAttribute('aria-pressed', String(on));
+      updatePreview();
+    });
+    $('mixPicker').appendChild(chip);
+  });
+
+  function selectedColors() {
+    if (!MIXABLE_TYPES.includes(selectedType())) return [];
+    return [...document.querySelectorAll('.mix-chip[aria-pressed="true"]')].map((chip) => chip.dataset.color);
+  }
+
+  // ---------- Tipos de macetica ----------
+  POT_TYPES.forEach((style, index) => {
+    const label = document.createElement('label');
+    label.className = 'pot-option';
+    const parts = potArt(style, `pp${index}`, seededRandom(index + 3), flowerPalette('#facc15'));
+    label.innerHTML = `<input type="radio" name="flowerPot" value="${style}" ${index === 0 ? 'checked' : ''}><svg viewBox="18 112 84 110" aria-hidden="true">${parts.back}${parts.front}</svg><span></span>`;
+    label.querySelector('span').textContent = POT_LABELS[style];
+    $('potPicker').appendChild(label);
+  });
+  $('potPicker').addEventListener('change', updatePreview);
+
+  function selectedPot() {
+    return form.elements.flowerPot.value || 'redondita';
+  }
+
   function updatePreview() {
     const color = $('inputFlowerColor').value;
-    $('panelPreview').innerHTML = createFlowerSVG(selectedType(), color, { seed: currentFlowerId });
+    $('mixField').hidden = !MIXABLE_TYPES.includes(selectedType());
+    $('potField').hidden = selectedBase() !== 'maceta';
+    $('panelPreview').innerHTML = createFlowerSVG(selectedType(), color, { seed: currentFlowerId, base: selectedBase(), pot: selectedPot(), colors: selectedColors() });
     document.querySelectorAll('.color-preset').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.color === color));
     });
   }
 
-  $('typePicker').addEventListener('change', updatePreview);
+  $('typePicker').addEventListener('change', () => {
+    suggestBase();
+    updatePreview();
+  });
   $('inputFlowerColor').addEventListener('input', updatePreview);
   document.querySelectorAll('.color-preset').forEach((button) => {
     button.addEventListener('click', () => {
@@ -3163,6 +3376,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (choice !== 'custom') return choice;
     if (media.music) return media.music;
     const link = $('inputFlowerMusicUrl').value.trim();
+    // Editando: si no se eligió otra, se queda la canción que ya tenía.
+    if (!link && editing && $('keepMusic').checked && editing.music && !MELODY_NAMES[editing.music]) return editing.music;
     if (!link) {
       showError($('musicError'), 'Elige un archivo o pega un enlace directo a la canción.');
       return null;
@@ -3184,17 +3399,25 @@ document.addEventListener('DOMContentLoaded', () => {
     showError($('fileFlowerPhotoError'), '');
     showError($('fileCouplePhotoError'), '');
     showError($('musicError'), '');
-    const realLink = media.real || photoFromLink('inputFlowerPhotoUrl', 'fileFlowerPhotoError');
-    const coupleLink = media.couple || photoFromLink('inputCouplePhotoUrl', 'fileCouplePhotoError');
+    // Editando: lo que no se cambie se queda como estaba, salvo que se desmarque "Dejar la foto".
+    const kept = (field, box) => (editing && $(box).checked ? editing[field] : '');
+    const realLink = media.real || photoFromLink('inputFlowerPhotoUrl', 'fileFlowerPhotoError') || kept('realPhoto', 'keepRealPhoto');
+    const coupleLink = media.couple || photoFromLink('inputCouplePhotoUrl', 'fileCouplePhotoError') || kept('couplePhoto', 'keepCouplePhoto');
     const music = musicFromForm();
+    const spotifyText = $('inputFlowerSpotify').value.trim();
+    const spotify = spotifyRef(spotifyText);
+    showError($('spotifyError'), spotifyText && !spotify ? 'Ese enlace no es de una canción, álbum o lista de Spotify. Cópialo desde Compartir › Copiar enlace.' : '');
     const firstError = form.querySelector('.field-error:not([hidden])');
     if (firstError) {
       firstError.closest('.field').scrollIntoView({ block: 'center', behavior: 'smooth' });
       return null;
     }
     return normalizeFlower({
-      id: currentFlowerId,
+      id: editing ? editing.id : currentFlowerId,
       type: selectedType(),
+      base: selectedBase(),
+      pot: selectedPot(),
+      colors: selectedColors(),
       color: $('inputFlowerColor').value,
       title,
       date: $('inputFlowerDate').value,
@@ -3203,7 +3426,8 @@ document.addEventListener('DOMContentLoaded', () => {
       signature: $('inputFlowerSignature').value.trim(),
       realPhoto: realLink,
       couplePhoto: coupleLink,
-      music
+      music,
+      spotify
     });
   }
 
@@ -3378,7 +3602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#4a3226';
     ctx.font = '600 104px Fredoka, sans-serif';
     ctx.fillText('Para ti', width / 2, 190);
-    const art = await loadImage(svgDataURI(createFlowerSVG(selectedType(), $('inputFlowerColor').value, { head: true }), 160, 160));
+    const art = await loadImage(svgDataURI(createFlowerSVG(selectedType(), $('inputFlowerColor').value, { head: true, seed: currentFlowerId, colors: selectedColors() }), 160, 160));
     ctx.drawImage(art, width / 2 - 60, 212, 120, 120);
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
@@ -3409,6 +3633,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try { site = localStorage.getItem(SITE_KEY) || ''; } catch (e) {}
     $('inputSiteUrl').value = site;
     updateSiteHelp();
+    baseChosen = false;
+    suggestBase();
+    document.querySelectorAll('.mix-chip').forEach((chip) => chip.setAttribute('aria-pressed', 'false'));
+    setEditing(null);
     updatePreview();
   }
 
@@ -3433,16 +3661,118 @@ document.addEventListener('DOMContentLoaded', () => {
     resetForm();
   });
 
+  // ================= EDITAR UNA FLOR =================
+  // Con la clave de Santiago, cualquier flor se puede editar: se abre el panel con todo lo que tiene.
+  let editing = null;
+
+  function setEditing(flower) {
+    editing = flower;
+    const on = Boolean(flower);
+    $('adminTitle').textContent = on ? 'Editar flor' : 'Crear Flor y Generar QR';
+    $('adminLead').hidden = on;
+    $('editBanner').hidden = !on;
+    if (on) {
+      $('editBanner').innerHTML = 'Editando «<span></span>»<small>Lo que no cambies se queda igual. Su QR sigue siendo el mismo.</small>';
+      $('editBanner').querySelector('span').textContent = flower.title;
+    }
+    $('btnSaveEdit').hidden = !on;
+    $('btnCancelEdit').hidden = !on;
+    $('btnDirectPlant').hidden = on;
+    $('keepRealRow').hidden = !(on && flower.realPhoto);
+    $('keepCoupleRow').hidden = !(on && flower.couplePhoto);
+    $('keepMusicRow').hidden = !(on && flower.music && !MELODY_NAMES[flower.music]);
+    ['keepRealPhoto', 'keepCouplePhoto', 'keepMusic'].forEach((box) => { $(box).checked = true; });
+  }
+
+  function startEditing(flower) {
+    resetForm();
+    setEditing(flower);
+    currentFlowerId = flower.id;
+    form.querySelector(`input[name="flowerType"][value="${flower.type}"]`).checked = true;
+    form.querySelector(`input[name="flowerBase"][value="${flower.base}"]`).checked = true;
+    baseChosen = true;
+    const potInput = form.querySelector(`input[name="flowerPot"][value="${flower.pot}"]`);
+    if (potInput) potInput.checked = true;
+    document.querySelectorAll('.mix-chip').forEach((chip) => {
+      chip.setAttribute('aria-pressed', String(flower.colors.includes(chip.dataset.color)));
+    });
+    $('inputFlowerColor').value = flower.color;
+    $('inputFlowerTitle').value = flower.title;
+    $('inputFlowerDate').value = flower.date;
+    $('inputFlowerLetter').value = flower.letter;
+    $('inputFlowerMeaning').value = flower.meaning;
+    $('inputFlowerSignature').value = flower.signature;
+    if (/^https?:/i.test(flower.realPhoto)) $('inputFlowerPhotoUrl').value = flower.realPhoto;
+    if (/^https?:/i.test(flower.couplePhoto)) $('inputCouplePhotoUrl').value = flower.couplePhoto;
+    const music = flower.music;
+    $('inputFlowerMusic').value = !music ? '' : MELODY_NAMES[music] ? music : 'custom';
+    $('customMusicFields').hidden = $('inputFlowerMusic').value !== 'custom';
+    if (/^https?:/i.test(music)) $('inputFlowerMusicUrl').value = music;
+    $('inputFlowerSpotify').value = flower.spotify ? `https://open.spotify.com/${flower.spotify}` : '';
+    updatePreview();
+    adminModal.scrollTop = 0;
+  }
+
+  $('btnEditFlower').addEventListener('click', async () => {
+    const flower = state.activeFlower && FlowerStore.get(state.activeFlower.id);
+    if (!flower) return;
+    await closeSheet(flowerModal);
+    startEditing(flower);
+    renderAdminList();
+    if (Cloud.user) renderSongList();
+    openSheet(adminModal);
+  });
+
+  $('btnCancelEdit').addEventListener('click', () => {
+    resetForm();
+    adminModal.scrollTop = 0;
+  });
+
+  $('btnSaveEdit').addEventListener('click', async (event) => {
+    if (!editing) return;
+    const button = event.currentTarget;
+    const before = editing;
+    const flower = await flowerFromForm({ strict: true });
+    if (!flower) return;
+    button.disabled = true;
+    try {
+      const saved = await FlowerStore.add({ ...flower, porSembrar: before.porSembrar });
+      if (!saved) throw new Error('sin espacio');
+      if (Cloud.user && !(await Cloud.ensureUploaded(flower.id))) throw new Error('sin subir');
+      // Las fotos o canciones que se cambiaron ya no se necesitan en la nube.
+      const now = FlowerStore.get(flower.id) || saved;
+      for (const field of ['realPhoto', 'couplePhoto', 'music']) {
+        if (before[field] && before[field] !== now[field] && before[field].startsWith('nube:')) {
+          Cloud._removeFile(before[field]).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.error('No se pudieron guardar los cambios', e);
+      toast('No pude guardar los cambios. Revisa tu conexión e inténtalo otra vez.');
+      return;
+    } finally {
+      button.disabled = false;
+    }
+    toast('Cambios guardados');
+    resetForm();
+    renderAdminList();
+    await closeSheet(adminModal);
+    renderGarden();
+    const updated = FlowerStore.get(flower.id);
+    if (updated && !updated.porSembrar) openFlowerDetail(updated.id);
+  });
+
   function renderAdminList() {
     const list = $('adminFlowerList');
     list.innerHTML = '';
     FlowerStore.getAll().forEach((flower) => {
       const item = document.createElement('li');
       item.className = 'memory-row';
-      item.innerHTML = `<span class="memory-row__art">${createFlowerSVG(flower.type, flower.color, { head: true })}</span><span class="memory-row__text"><strong></strong><small></small></span><button class="btn-link" type="button">Quitar</button>`;
+      item.innerHTML = `<span class="memory-row__art">${createFlowerSVG(flower.type, flower.color, { colors: flower.colors, pot: flower.pot, base: flower.base, head: true })}</span><span class="memory-row__text"><strong></strong><small></small></span><button class="btn-link" type="button">Editar</button><button class="btn-link" type="button">Quitar</button>`;
       item.querySelector('strong').textContent = flower.title;
       item.querySelector('small').textContent = formatDate(flower.date) + (flower.porSembrar ? ' · esperando su QR' : '');
-      const remove = item.querySelector('button');
+      const [edit, remove] = item.querySelectorAll('button');
+      edit.addEventListener('click', () => startEditing(FlowerStore.get(flower.id) || flower));
       remove.addEventListener('click', async () => {
         if (remove.dataset.confirm !== '1') {
           remove.dataset.confirm = '1';
@@ -3459,6 +3789,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('btnOpenAdmin').addEventListener('click', () => {
     renderAdminList();
+    $('toggleSfx').checked = Sound.enabled;
+    $('toggleMotion').checked = !reducedMotion;
+    showError($('backupError'), '');
     if (Cloud.user) renderSongList();
     openSheet(adminModal);
   });

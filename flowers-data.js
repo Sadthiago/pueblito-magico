@@ -6,6 +6,9 @@
 
 const STORAGE_KEY = 'jardin_magico_flores_v1';
 const FLOWER_TYPES = ['astromelia', 'sunflower', 'rose', 'tulip', 'daisy', 'wildflower', 'ramo'];
+const POT_TYPES = ['redondita', 'barro', 'canasta', 'tacita', 'latica'];
+// Los tipos que tienen varias flores y por eso pueden mezclar colores.
+const MIXABLE_TYPES = ['ramo', 'astromelia'];
 const MELODY_NAMES = {
   casita: 'Piano de la casita',
   cajita: 'Cajita de música',
@@ -19,12 +22,9 @@ const WATER_FLOOR = 55;
 // Por encima de este largo un QR impreso en una tarjetita ya cuesta escanearlo.
 const QR_DIRECT_LIMIT = 900;
 
-// Mensajitos del buzón. Santiago: edita estos textos con tus propias palabras.
-const QUICK_LETTERS = [
-  { label: 'Abre cuando tengas un día difícil', text: 'Recuerda: tu sonrisa es mi cosa favorita en el mundo entero.' },
-  { label: 'Por qué te regalo flores amarillas', text: 'Promesa: por cada flor física que te dé, este jardín seguirá creciendo sin fin.' },
-  { label: 'Abre si me extrañas', text: 'Eres magia pura. Gracias por existir.' }
-];
+// Mensajitos del buzón. Santiago: escríbelos así, uno por línea:
+// { label: 'Abre cuando me extrañes', text: 'Lo que quieras decirle' },
+const QUICK_LETTERS = [];
 
 const INITIAL_DEMO_FLOWER = {
   id: 'flor_bienvenida_01',
@@ -162,13 +162,31 @@ function safeMusic(value) {
   return /^(https?:\/\/|(idb|nube):[a-z0-9]+$|data:audio\/[a-z0-9.+-]+[;,])/i.test(value) ? value : '';
 }
 
+// Enlace de Spotify (canción, álbum o lista) → "track/ID", lo que necesita el reproductor de Spotify.
+function spotifyRef(value) {
+  if (typeof value !== 'string') return '';
+  const text = value.trim();
+  const stored = text.match(/^(track|album|playlist|episode)\/([A-Za-z0-9]{10,40})$/);
+  if (stored) return `${stored[1]}/${stored[2]}`;
+  const uri = text.match(/^spotify:(track|album|playlist|episode):([A-Za-z0-9]{10,40})$/);
+  if (uri) return `${uri[1]}/${uri[2]}`;
+  const link = text.match(/^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?(?:embed\/)?(track|album|playlist|episode)\/([A-Za-z0-9]{10,40})/i);
+  return link ? `${link[1].toLowerCase()}/${link[2]}` : '';
+}
+
 function normalizeFlower(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const text = (value, max, fallback = '') => (typeof value === 'string' && value.trim() ? value.slice(0, max) : fallback);
   const number = (value) => (Number.isFinite(value) ? value : null);
+  const type = FLOWER_TYPES.includes(raw.type) ? raw.type : 'sunflower';
   return {
     id: typeof raw.id === 'string' && /^[\w-]{1,64}$/.test(raw.id) ? raw.id : newFlowerId(),
-    type: FLOWER_TYPES.includes(raw.type) ? raw.type : 'sunflower',
+    type,
+    // Dónde vive en el jardín: en su macetica o sembrada en el suelo. El ramo, por defecto, en el suelo.
+    base: raw.base === 'maceta' || raw.base === 'suelo' ? raw.base : type === 'ramo' ? 'suelo' : 'maceta',
+    pot: POT_TYPES.includes(raw.pot) ? raw.pot : 'redondita',
+    // Colores extra para los ramos de varios colores (además del principal), hasta 3.
+    colors: Array.isArray(raw.colors) ? raw.colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 3) : [],
     color: /^#[0-9a-f]{6}$/i.test(raw.color) ? raw.color : '#facc15',
     title: text(raw.title, 140, 'Una flor para ti'),
     date: /^\d{4}-\d{2}-\d{2}$/.test(raw.date) ? raw.date : todayISO(),
@@ -178,6 +196,7 @@ function normalizeFlower(raw) {
     realPhoto: safePhoto(raw.realPhoto),
     couplePhoto: safePhoto(raw.couplePhoto),
     music: safeMusic(raw.music),
+    spotify: spotifyRef(raw.spotify),
     waterLevel: Math.min(100, Math.max(0, number(raw.waterLevel) ?? 100)),
     plantedAt: number(raw.plantedAt) ?? Date.now(),
     lastWatered: number(raw.lastWatered),
@@ -330,6 +349,9 @@ const FlowerStore = {
     const payload = {
       id: flower.id,
       t: flower.type,
+      b: flower.base,
+      pt: flower.pot !== 'redondita' ? flower.pot : undefined,
+      cs: flower.colors.length ? flower.colors : undefined,
       c: flower.color,
       tt: flower.title,
       d: flower.date,
@@ -338,7 +360,8 @@ const FlowerStore = {
       s: flower.signature || undefined,
       rp: flower.realPhoto || undefined,
       cp: flower.couplePhoto || undefined,
-      mu: flower.music || undefined
+      mu: flower.music || undefined,
+      sp: flower.spotify || undefined
     };
     return `${baseUrl}?flor=${encodeBase64Url(JSON.stringify(payload))}`;
   },
@@ -351,6 +374,9 @@ const FlowerStore = {
       return normalizeFlower({
         id: data.id,
         type: data.t,
+        base: data.b,
+        pot: data.pt,
+        colors: data.cs,
         color: data.c,
         title: data.tt,
         date: data.d,
@@ -359,7 +385,8 @@ const FlowerStore = {
         signature: data.s,
         realPhoto: data.rp,
         couplePhoto: data.cp,
-        music: data.mu
+        music: data.mu,
+        spotify: data.sp
       });
     } catch (e) {
       console.error('Error al decodificar el QR:', e);

@@ -1472,6 +1472,68 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
   border-radius: 50%;
 }
 .color-preset[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+.field-label small { font-weight: 400; color: var(--ink-soft); }
+
+/* La canción de Spotify dentro de la cartica */
+.spotify-box { margin-top: 18px; }
+.spotify-box iframe {
+  display: block;
+  width: 100%;
+  height: 152px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 3px 0 var(--ink);
+  background: #282828;
+}
+
+/* Editando una flor que ya existe */
+.edit-banner {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  background: #ffe2a8;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+}
+.edit-banner small { display: block; font-weight: 400; color: var(--ink-soft); }
+.keep-row:not([hidden]) { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 15px; font-weight: 600; color: #3f7a3f; }
+.keep-row input { width: 20px; height: 20px; accent-color: var(--ink); }
+
+/* Colores para mezclar en el ramo */
+#mixPicker { flex-wrap: wrap; }
+.mix-chip {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--c);
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.mix-chip[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4.5px var(--ink); }
+.mix-chip[aria-pressed="true"]::after { content: "✓"; font-weight: 700; color: var(--ink); }
+
+/* Tipos de macetica, con su dibujito */
+.pot-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
+.pot-option {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 4px 8px;
+  font-size: 14px;
+  text-align: center;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.pot-option { display: flex; flex-direction: column; align-items: center; }
+.pot-option svg { display: block; width: 64px; height: 52px; overflow: visible; }
+.pot-option span { white-space: nowrap; }
+.pot-option input { position: absolute; opacity: 0; pointer-events: none; }
+.pot-option:has(input:checked) { background: #ffe2a8; box-shadow: inset 0 0 0 2.5px var(--ink); font-weight: 600; }
+.pot-option:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .panel-actions { display: grid; gap: 8px; }
 @media (min-width: 560px) { .panel-actions { grid-template-columns: 2fr 1fr; } }
@@ -1685,11 +1747,14 @@ body.time-night { --sun-grab: none; --moon-grab: auto; }
                1.5px 1.5px 0 var(--ink), -1.5px 1.5px 0 var(--ink), 1.5px -1.5px 0 var(--ink), -1.5px -1.5px 0 var(--ink),
                0 4px 0 var(--ink);
 }
+.brand h1 { font-size: clamp(21px, 6vw, 27px); }
 .brand p {
+  max-width: 32ch;
   margin-top: 4px;
   font-weight: 600;
   font-style: normal;
   font-size: 14px;
+  line-height: 1.3;
   color: #fff;
   text-shadow: 1.5px 0 0 var(--ink), -1.5px 0 0 var(--ink), 0 1.5px 0 var(--ink), 0 -1.5px 0 var(--ink),
                1px 1px 0 var(--ink), -1px 1px 0 var(--ink), 1px -1px 0 var(--ink), -1px -1px 0 var(--ink);
