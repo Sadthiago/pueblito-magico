@@ -158,26 +158,28 @@ function bouquetSVG(p, random, id, { head = false, sprouting = false } = {}) {
     </g>`;
   const leaves = `<g class="flower-leaves" fill="${STEM}" ${OUTLINE}>${leaf(40, 106, 215, 34, 8)}${leaf(80, 106, -35, 34, 8)}${leaf(32, 98, 240, 30, 7)}${leaf(88, 98, -60, 30, 7)}${leaf(60, 92, 272, 26, 6)}${leaf(26, 124, 192, 26, 6)}${leaf(94, 124, -12, 26, 6)}</g>`;
   const flowers = `${blossom(60, 92, 0, 0.6)}${blossom(40, 101, -35, 0.56)}${blossom(80, 101, 35, 0.56)}${blossom(25, 117, -55, 0.48)}${blossom(95, 117, 55, 0.48)}${blossom(48, 114, -10, 0.6)}${blossom(72, 114, 12, 0.6)}${blossom(60, 125, 180, 0.55)}${blossom(34, 129, -40, 0.48)}${blossom(86, 129, 40, 0.48)}`;
-  const paperBack = `<path fill="#fffaf0" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" d="M24,132 C20,118 26,104 32,100 C36,112 42,120 50,126 L70,126 C78,120 84,112 88,100 C94,104 100,118 96,132 Z"/>`;
-  const paperFront = `<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round">
-      <path fill="#fffaf0" d="M26,132 C34,128 42,136 50,131 C56,136 64,136 70,131 C78,136 86,128 94,132 L84,206 C76,212 44,212 36,206 Z"/>
-      <path fill="none" stroke="#e0b04a" stroke-width="3" stroke-linecap="round" d="M30,148 C44,142 54,154 66,148 C76,143 84,148 91,146 M33,166 C46,160 56,172 68,166 C78,161 84,166 89,164 M36,188 C48,182 58,194 70,188 C78,184 82,188 86,186"/>
-      <path fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2.4" stroke-linecap="round" d="M36,140 C35,156 37,176 40,196"/>
-      <path fill="#e8413c" d="M37,170 C52,174 68,174 83,170 L82,178 C68,182 52,182 38,178 Z"/>
-      <path fill="#e8413c" d="M60,175 C50,164 38,164 40,172 C41,180 52,180 60,175 Z"/>
-      <path fill="#e8413c" d="M60,175 C70,164 82,164 80,172 C79,180 68,180 60,175 Z"/>
-      <path fill="#e8413c" d="M58,176 L50,198 L55,196 L57,201 Z M62,176 L70,198 L65,196 L63,201 Z"/>
-      <circle cx="60" cy="175" r="3.6" fill="#c92f2b"/>
+  // Papel en cono delgadito, con un doblez al frente, rayitas doradas y un moño rojo pequeño.
+  const paperBack = `<path fill="#fffaf0" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" d="M31,134 C27,120 33,106 39,100 C43,112 49,120 54,126 L66,126 C71,120 77,112 81,100 C87,106 93,120 89,134 Z"/>`;
+  const paperFront = `<g stroke="${INK}" stroke-width="2.3" stroke-linejoin="round">
+      <path fill="#fffaf0" d="M32,134 C38,130 44,137 50,133 C55,137 65,137 70,133 C76,137 82,130 88,134 C84,156 76,178 69,207 C64,211 56,211 51,207 C44,178 36,156 32,134 Z"/>
+      <path fill="#f4ead8" stroke-width="1.8" d="M32,134 C47,150 59,170 65,209 C60,211 55,210 51,207 C44,178 36,156 32,134 Z"/>
+      <path fill="none" stroke="#e0b04a" stroke-width="2.2" stroke-linecap="round" d="M37,149 C50,145 66,151 84,146 M42,166 C54,162 66,168 79,163 M48,187 C56,184 64,189 73,185"/>
+      <path fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-linecap="round" d="M76,142 C74,158 70,176 66,198"/>
+      <path fill="#e8413c" stroke-width="1.9" d="M44,172 C54,175 66,175 76,172 L75,178.5 C65,181.5 55,181.5 45,178.5 Z"/>
+      <path fill="#e8413c" stroke-width="1.9" d="M60,176 C53,168 44,168 45,174.5 C46,181 54,181 60,176 Z"/>
+      <path fill="#e8413c" stroke-width="1.9" d="M60,176 C67,168 76,168 75,174.5 C74,181 66,181 60,176 Z"/>
+      <path fill="#e8413c" stroke-width="1.7" d="M58.5,177 L53,195 L56,193.5 L57.5,197.5 Z M61.5,177 L67,195 L64,193.5 L62.5,197.5 Z"/>
+      <circle cx="60" cy="176" r="3" fill="#c92f2b" stroke-width="1.7"/>
     </g>`;
   const defs = `<defs>${astromeliaDef(p, random, id)}</defs>`;
   if (head) {
     return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="6 4 108 136">${defs}${balloon}${paperBack}${leaves}${flowers}</svg>`;
   }
   return `<svg class="flower-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 220">${defs}
-    <ellipse cx="60" cy="214" rx="34" ry="5.5" fill="#1f5a2a" opacity=".22"/>
+    <ellipse cx="60" cy="212" rx="22" ry="4.5" fill="#1f5a2a" opacity=".22"/>
     <g class="stem-container ${sprouting ? 'sprouting-stem' : ''}">${paperBack}${paperFront}</g>
     <g class="flower-blossom ${sprouting ? 'sprouting-head' : ''}">${leaves}${flowers}${balloon}</g>
-    <path fill="none" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" d="M26,132 C34,128 42,136 50,131 C56,136 64,136 70,131 C78,136 86,128 94,132"/>
+    <path fill="none" stroke="${INK}" stroke-width="2.3" stroke-linejoin="round" d="M32,134 C38,130 44,137 50,133 C55,137 65,137 70,133 C76,137 82,130 88,134"/>
   </svg>`;
 }
 
