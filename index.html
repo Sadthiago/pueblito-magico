@@ -632,7 +632,8 @@
       <form id="formLogin" novalidate>
         <div class="field">
           <label for="inputGardenKey">Clave</label>
-          <input type="password" id="inputGardenKey" autocomplete="current-password" enterkeyhint="go">
+          <input type="password" id="inputGardenKey" autocomplete="current-password" enterkeyhint="go" aria-describedby="loginHint">
+          <p class="field-help login-hint" id="loginHint">Pista: es una fecha</p>
           <p class="field-error" id="loginError" role="alert" hidden></p>
         </div>
         <button class="btn btn--sun" id="btnLogin" type="submit">Entrar al jardín</button>
