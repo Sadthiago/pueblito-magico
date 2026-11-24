@@ -19,6 +19,13 @@ const CLOUD_MEDIA_FIELDS = ['realPhoto', 'couplePhoto', 'music'];
 // Lo único que la cuenta de ella puede cambiar de una flor que ya está en la nube.
 const CLOUD_CARE_FIELDS = ['waterLevel', 'lastWatered', 'porSembrar', 'plantedAt', 'editadoEn'];
 
+// Lo que dice cada aviso. No lleva nada de las cartas.
+const VISIT_TEXT = {
+  entro: ['Alisson entró al jardín', 'house'],
+  abrio: ['Alisson abrió una de tus flores', 'love_letter'],
+  planto: ['Alisson escaneó el QR y plantó tu flor', 'seedling']
+};
+
 const Cloud = {
   available: false,
   user: null,
@@ -320,6 +327,60 @@ const Cloud = {
     await this._removeFile(song.ref).catch(() => {});
     if (song.cover) await this._removeFile(song.cover).catch(() => {});
     Media.remove(song.ref).catch(() => {});
+  },
+
+  // ================= VISITAS Y AVISOS =================
+  // Cuando ella entra, abre una flor o escanea un QR, queda anotado en "visitas" (solo Santiago
+  // lo lee) y, si Santiago activó los avisos, le llega una notificación por ntfy.sh.
+  // El nombre del canal vive en la nube (ajustes/avisos), no en el código, que es público.
+  _alertTopic: null,
+
+  async alertTopic(fresh = false) {
+    if (this._alertTopic === null || fresh) {
+      try {
+        const doc = await this._db.collection('ajustes').doc('avisos').get();
+        this._alertTopic = doc.exists ? String(doc.data().ntfy || '') : '';
+      } catch (e) {
+        this._alertTopic = '';
+      }
+    }
+    return this._alertTopic;
+  },
+
+  async setAlertTopic(topic) {
+    if (!this.isAdmin()) return;
+    await this._db.collection('ajustes').doc('avisos').set({ ntfy: topic });
+    this._alertTopic = topic;
+  },
+
+  // Va como JSON en texto plano: así acepta tildes y el navegador no pide permiso previo.
+  async notify(message, { title = 'Jardín del Pueblito Mágico', tags = ['sunflower'] } = {}) {
+    const topic = await this.alertTopic();
+    if (!topic) return false;
+    try {
+      const response = await fetch('https://ntfy.sh/', {
+        method: 'POST',
+        body: JSON.stringify({ topic, title, message, tags, click: location.origin + location.pathname })
+      });
+      return response.ok;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  logVisit(kind, flower = null) {
+    if (this.role !== 'ella' || !VISIT_TEXT[kind]) return;
+    const entry = { tipo: kind, en: Date.now(), flor: flower ? flower.id : '', titulo: flower ? String(flower.title || '').slice(0, 80) : '' };
+    this._db.collection('visitas').add(entry).catch((e) => console.error('No pude anotar la visita', e));
+    const [message, tag] = VISIT_TEXT[kind];
+    this.notify(message, { tags: [tag] });
+  },
+
+  watchVisits(onVisits) {
+    if (!this.isAdmin()) return () => {};
+    return this._db.collection('visitas').orderBy('en', 'desc').limit(40).onSnapshot((snapshot) => {
+      onVisits(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    }, (error) => console.error('No pude escuchar las visitas', error));
   },
 
   async getFlower(id) {

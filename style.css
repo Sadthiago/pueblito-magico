@@ -996,7 +996,10 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
   transition: background 0.2s ease, transform 0.2s ease;
 }
 .btn:active { transform: scale(0.98); }
-.btn[hidden] { display: none; }
+.btn[hidden],
+.btn-link[hidden],
+.alerts-topic[hidden] { display: none; }
+#btnAlertsOff:not([hidden]) { display: block; margin: 12px auto 0; }
 .btn--sun { background: var(--ink); color: var(--paper); }
 .btn--soft { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
 .btn[disabled] { opacity: 0.55; cursor: progress; }
@@ -1361,6 +1364,12 @@ dialog.sheet.is-closing::backdrop { opacity: 0; transition: opacity 0.18s ease; 
 .memory-row__text { min-width: 0; flex: 1; }
 .memory-row__text strong { display: block; font-size: 17px; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
 .memory-row__text small { font-size: 15px; font-style: italic; color: var(--ink-soft); }
+
+.visit-row { min-height: 0; padding: 8px 2px; }
+.visit-row__icon { flex: none; width: 28px; text-align: center; font-size: 20px; }
+.alerts-box { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.alerts-box__title { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+.alerts-topic { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--paper-deep); font-family: ui-monospace, Consolas, monospace; font-size: 15px; overflow-wrap: anywhere; user-select: all; }
 
 .backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 .backup-actions .btn { font-size: 16px; padding-inline: 8px; }

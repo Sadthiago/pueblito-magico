@@ -38,6 +38,19 @@ service cloud.firestore {
       allow write: if isSantiago();
     }
 
+    // Cuándo entra ella y qué abre. Ella solo anota; solo Santiago lo lee.
+    match /visitas/{visitId} {
+      allow read, delete: if isSantiago();
+      allow create: if isElla()
+        && request.resource.data.keys().hasOnly(['tipo', 'en', 'flor', 'titulo']);
+    }
+
+    // Ajustes del jardín, como el canal de avisos.
+    match /ajustes/{settingId} {
+      allow read: if isFamily();
+      allow write: if isSantiago();
+    }
+
     // Fotos y canciones, partidas en pedazos de menos de 1 MB.
     match /archivos/{partId} {
       allow read: if isFamily();

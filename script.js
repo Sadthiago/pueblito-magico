@@ -1862,6 +1862,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const flower = FlowerStore.get(id);
     if (!flower) return;
     state.activeFlower = flower;
+    noteVisit('abrio', flower);
     $('meadowHint').hidden = true;
     try { localStorage.setItem('jardin_magico_pista', '1'); } catch (e) {}
     $('modalFlowerArt').innerHTML = createFlowerSVG(flower.type, flower.color, { colors: flower.colors, pot: flower.pot, base: flower.base, head: true, seed: flower.id });
@@ -2323,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openFlowerDetail(flower.id);
       return;
     }
+    noteVisit('planto', saved);
     // Se esconde hasta que termine la ceremonia, aunque ya esté guardada.
     const element = flowersContainer.querySelector(`[data-id="${CSS.escape(flower.id)}"]`);
     if (element) element.style.visibility = 'hidden';
@@ -3896,6 +3898,10 @@ document.addEventListener('DOMContentLoaded', () => {
     $('toggleMotion').checked = !reducedMotion;
     showError($('backupError'), '');
     if (Cloud.user) renderSongList();
+    if (Cloud.isAdmin()) {
+      renderVisits();
+      renderAlerts();
+    }
     openSheet(adminModal);
   });
   $('btnCloseAdmin').addEventListener('click', () => closeSheet(adminModal));
@@ -3959,6 +3965,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const admin = Cloud.isAdmin();
     $('btnOpenAdmin').hidden = !admin;
     $('songsSection').hidden = !admin;
+    $('visitsSection').hidden = !admin;
     $('btnSignOut').hidden = false;
     $('backupNote').textContent = 'El jardín se guarda en la nube y es el mismo en todos sus dispositivos. La copia es un respaldo extra, por si acaso.';
     $('adminListTitle').textContent = 'Flores del jardín';
@@ -3972,12 +3979,136 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminModal.open) renderAdminList();
   }
 
+  // ---------- Visitas de ella ----------
+  // Una entrada cada 30 minutos como mucho; una misma flor, cada 10. Abrir la flor
+  // recién plantada no cuenta aparte: ya llegó el aviso de que la plantó.
+  const VISIT_GAP = { entro: 30 * 60000, abrio: 10 * 60000, planto: 0 };
+  const lastVisit = new Map();
+  function noteVisit(kind, flower = null) {
+    if (Cloud.role !== 'ella') return;
+    const key = kind === 'entro' ? 'entro' : 'flor:' + (flower ? flower.id : '');
+    let last = lastVisit.get(key) || 0;
+    if (kind === 'entro') {
+      try { last = Number(localStorage.getItem('jardin_magico_visita')) || 0; } catch (e) {}
+    }
+    const now = Date.now();
+    if (kind !== 'planto' && now - last < VISIT_GAP[kind]) return;
+    lastVisit.set(key, now);
+    if (kind === 'entro') {
+      try { localStorage.setItem('jardin_magico_visita', String(now)); } catch (e) {}
+    }
+    Cloud.logVisit(kind, flower);
+  }
+
+  const VISIT_LABELS = {
+    entro: ['🏡', 'Entró al jardín'],
+    abrio: ['💌', 'Abrió una flor'],
+    planto: ['🌱', 'Escaneó el QR y plantó']
+  };
+
+  function visitDate(time) {
+    const date = new Date(time);
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - 86400000);
+    const hour = date.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
+    if (date.toDateString() === today.toDateString()) return `Hoy, ${hour}`;
+    if (date.toDateString() === yesterday.toDateString()) return `Ayer, ${hour}`;
+    return `${date.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' })}, ${hour}`;
+  }
+
+  let visits = [];
+  function renderVisits() {
+    const list = $('visitList');
+    list.innerHTML = '';
+    if (!visits.length) {
+      const empty = document.createElement('li');
+      empty.className = 'card-note';
+      empty.textContent = 'Todavía no ha entrado.';
+      list.appendChild(empty);
+    }
+    visits.forEach((visit) => {
+      const [icon, label] = VISIT_LABELS[visit.tipo] || ['🌼', 'Pasó por el jardín'];
+      const item = document.createElement('li');
+      item.className = 'memory-row visit-row';
+      item.innerHTML = '<span class="visit-row__icon" aria-hidden="true"></span><span class="memory-row__text"><strong></strong><small></small></span>';
+      item.querySelector('.visit-row__icon').textContent = icon;
+      item.querySelector('strong').textContent = visit.titulo ? `${label}: ${visit.titulo}` : label;
+      item.querySelector('small').textContent = visitDate(visit.en);
+      list.appendChild(item);
+    });
+  }
+
+  async function renderAlerts() {
+    const topic = await Cloud.alertTopic();
+    $('alertsNote').textContent = topic
+      ? 'Instala la app gratuita ntfy (Play Store o App Store), toca + y suscríbete a este canal. Te avisa cuando ella entra, abre una flor o escanea un QR. Los avisos no dicen nada de las cartas.'
+      : 'Te llega una notificación al celular cuando ella entra, abre una flor o escanea un QR. Usa la app gratuita ntfy; no necesita cuenta.';
+    $('alertsTopic').textContent = topic;
+    $('alertsTopic').hidden = !topic;
+    $('btnAlertsOn').hidden = Boolean(topic);
+    $('btnAlertsCopy').hidden = !topic;
+    $('btnAlertsTest').hidden = !topic;
+    $('btnAlertsOff').hidden = !topic;
+  }
+
+  // Un nombre largo al azar: quien lo conozca podría leer los avisos.
+  function newAlertTopic() {
+    const bytes = crypto.getRandomValues(new Uint8Array(12));
+    return 'pueblito-' + Array.from(bytes, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 20);
+  }
+
+  $('btnAlertsOn').addEventListener('click', async () => {
+    try {
+      await Cloud.setAlertTopic(newAlertTopic());
+    } catch (e) {
+      toast('No pude activar los avisos. Revisa la conexión.');
+    }
+    renderAlerts();
+  });
+
+  $('btnAlertsCopy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(await Cloud.alertTopic());
+      toast('Canal copiado');
+    } catch (e) {
+      toast('Mantén presionado el nombre para copiarlo');
+    }
+  });
+
+  $('btnAlertsTest').addEventListener('click', async () => {
+    const ok = await Cloud.notify('Así te va a llegar cuando ella entre 🌼', { tags: ['sunflower'] });
+    toast(ok ? 'Aviso enviado. Si no llega, revisa la suscripción en ntfy.' : 'No pude mandar el aviso. Revisa la conexión.');
+  });
+
+  $('btnAlertsOff').addEventListener('click', async () => {
+    const button = $('btnAlertsOff');
+    if (button.dataset.confirm !== '1') {
+      button.dataset.confirm = '1';
+      button.textContent = '¿Seguro? Toca otra vez para apagarlos';
+      return;
+    }
+    delete button.dataset.confirm;
+    button.textContent = 'Apagar avisos';
+    try {
+      await Cloud.setAlertTopic('');
+    } catch (e) {}
+    renderAlerts();
+  });
+
   async function connectCloud() {
     if (!Cloud.init()) return;
     const user = await Cloud.currentUser();
     if (!user) await askForKey();
     applyRole();
     await Cloud.start(onCloudChange);
+    noteVisit('entro');
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') noteVisit('entro');
+    });
+    Cloud.watchVisits((list) => {
+      visits = list;
+      if (adminModal.open) renderVisits();
+    });
     Cloud.watchSongs((songs) => {
       Radio.setSongs(songs);
       if (adminModal.open) renderSongList();
